@@ -1,0 +1,127 @@
+[
+  {
+    "title": "Albert Einstein",
+    "wikidata_data": {
+      "wikidata_id": "Q937",
+      "total_statements": 608,
+      "referenced_statements": 168,
+      "sitelinks_count": 315,
+      "claim_density": 1.9301587301587302,
+      "referenced_ratio": 0.27631578947368424,
+      "completeness_score": 0.24299582289055977,
+      "timestamp": "2025-10-10T23:19:06.633213+00:00"
+    },
+    "wikidata_features": {
+      "wikidata_statements": 608.0,
+      "wikidata_referenced_statements": 168.0,
+      "wikidata_sitelinks": 315.0,
+      "wikidata_claim_density": 1.9301587301587302,
+      "wikidata_referenced_ratio": 0.27631578947368424,
+      "wikidata_completeness_score": 0.24299582289055977,
+      "wikidata_has_data": 1.0,
+      "wikidata_statement_quality": 0.27631578947368424,
+      "wikidata_connectivity": 1.0,
+      "wikidata_factual_richness": 1.6800000000000004
+    }
+  },
+  {
+    "title": "Marie Curie",
+    "wikidata_data": {
+      "wikidata_id": "Q7186",
+      "total_statements": 395,
+      "referenced_statements": 119,
+      "sitelinks_count": 233,
+      "claim_density": 1.6952789699570816,
+      "referenced_ratio": 0.3012658227848101,
+      "completeness_score": 0.24857065246916932,
+      "timestamp": "2025-10-10T23:19:07.581437+00:00"
+    },
+    "wikidata_features": {
+      "wikidata_statements": 395.0,
+      "wikidata_referenced_statements": 119.0,
+      "wikidata_sitelinks": 233.0,
+      "wikidata_claim_density": 1.6952789699570816,
+      "wikidata_referenced_ratio": 0.3012658227848101,
+      "wikidata_completeness_score": 0.24857065246916932,
+      "wikidata_has_data": 1.0,
+      "wikidata_statement_quality": 0.3012658227848101,
+      "wikidata_connectivity": 1.0,
+      "wikidata_factual_richness": 1.19
+    }
+  },
+  {
+    "title": "Leonardo da Vinci",
+    "wikidata_data": {
+      "wikidata_id": "Q762",
+      "total_statements": 653,
+      "referenced_statements": 224,
+      "sitelinks_count": 301,
+      "claim_density": 2.169435215946844,
+      "referenced_ratio": 0.3430321592649311,
+      "completeness_score": 0.29259670419683237,
+      "timestamp": "2025-10-10T23:19:08.800534+00:00"
+    },
+    "wikidata_features": {
+      "wikidata_statements": 653.0,
+      "wikidata_referenced_statements": 224.0,
+      "wikidata_sitelinks": 301.0,
+      "wikidata_claim_density": 2.169435215946844,
+      "wikidata_referenced_ratio": 0.3430321592649311,
+      "wikidata_completeness_score": 0.29259670419683237,
+      "wikidata_has_data": 1.0,
+      "wikidata_statement_quality": 0.3430321592649311,
+      "wikidata_connectivity": 1.0,
+      "wikidata_factual_richness": 2.24
+    }
+  },
+  {
+    "title": "Barack Obama",
+    "wikidata_data": {
+      "wikidata_id": "Q76",
+      "total_statements": 552,
+      "referenced_statements": 212,
+      "sitelinks_count": 336,
+      "claim_density": 1.6428571428571428,
+      "referenced_ratio": 0.38405797101449274,
+      "completeness_score": 0.2961490683229813,
+      "timestamp": "2025-10-10T23:19:10.319854+00:00"
+    },
+    "wikidata_features": {
+      "wikidata_statements": 552.0,
+      "wikidata_referenced_statements": 212.0,
+      "wikidata_sitelinks": 336.0,
+      "wikidata_claim_density": 1.6428571428571428,
+      "wikidata_referenced_ratio": 0.38405797101449274,
+      "wikidata_completeness_score": 0.2961490683229813,
+      "wikidata_has_data": 1.0,
+      "wikidata_statement_quality": 0.38405797101449274,
+      "wikidata_connectivity": 1.0,
+      "wikidata_factual_richness": 2.12
+    }
+  },
+  {
+    "title": "Galileo Galilei",
+    "wikidata_data": {
+      "wikidata_id": "Q307",
+      "total_statements": 426,
+      "referenced_statements": 103,
+      "sitelinks_count": 264,
+      "claim_density": 1.6136363636363635,
+      "referenced_ratio": 0.24178403755868544,
+      "completeness_score": 0.2096158770806658,
+      "timestamp": "2025-10-10T23:19:11.188754+00:00"
+    },
+    "wikidata_features": {
+      "wikidata_statements": 426.0,
+      "wikidata_referenced_statements": 103.0,
+      "wikidata_sitelinks": 264.0,
+      "wikidata_claim_density": 1.6136363636363635,
+      "wikidata_referenced_ratio": 0.24178403755868544,
+      "wikidata_completeness_score": 0.2096158770806658,
+      "wikidata_has_data": 1.0,
+      "wikidata_statement_quality": 0.24178403755868544,
+      "wikidata_connectivity": 1.0,
+      "wikidata_factual_richness": 1.03
+    }
+  }
+]

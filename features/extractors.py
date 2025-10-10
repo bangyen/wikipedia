@@ -626,4 +626,13 @@ def all_features(article_data: Dict[str, Any]) -> Dict[str, float]:
         # Fallback if linkgraph module is not available
         pass
 
+    # Import and add Wikidata features
+    try:
+        from features.wikidata import wikidata_features
+
+        features.update(wikidata_features(article_data))
+    except ImportError:
+        # Fallback if wikidata module is not available
+        pass
+
     return features
