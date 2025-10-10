@@ -1,0 +1,283 @@
+# Wikipedia Article Maturity Metrics Schema
+# Defines quantifiable signals for assessing article maturity across multiple dimensions
+
+metadata:
+  version: "1.0"
+  description: "Comprehensive metrics for Wikipedia article maturity assessment"
+  categories: 4
+  total_metrics: 25
+  last_updated: "2024-01-01"
+
+metrics:
+  structure:
+    description: "Article organization, formatting, and structural completeness"
+    
+    - name: section_count
+      definition: "Total number of sections in the article"
+      computation_formula: "Count section headings (===, ==, =)"
+      mediawiki_api_endpoint: "/w/api.php?action=parse&page={title}&prop=sections"
+      data_type: int
+      normalization: "raw_count"
+      rationale: "More sections indicate comprehensive topic coverage and logical organization"
+      
+    - name: section_depth
+      definition: "Maximum nesting level of sections"
+      computation_formula: "Calculate deepest level of section headings"
+      mediawiki_api_endpoint: "/w/api.php?action=parse&page={title}&prop=sections"
+      data_type: int
+      normalization: "raw_count"
+      rationale: "Deeper structures suggest detailed subtopic coverage"
+      
+    - name: average_section_length
+      definition: "Average word count per section"
+      computation_formula: "total_words / section_count"
+      mediawiki_api_endpoint: "/w/api.php?action=query&titles={title}&prop=revisions&rvprop=content"
+      data_type: float
+      normalization: "words_per_section"
+      rationale: "Balanced section lengths indicate thorough coverage without excessive detail"
+      
+    - name: lead_section_length
+      definition: "Word count of the introductory section"
+      computation_formula: "Count words before first section heading"
+      mediawiki_api_endpoint: "/w/api.php?action=parse&page={title}&prop=sections|text"
+      data_type: int
+      normalization: "word_count"
+      rationale: "Well-developed lead sections provide comprehensive summaries"
+      
+    - name: infobox_presence
+      definition: "Whether article contains an infobox template"
+      computation_formula: "Check for infobox template in wikitext"
+      mediawiki_api_endpoint: "/w/api.php?action=parse&page={title}&prop=templates"
+      data_type: bool
+      normalization: "binary"
+      rationale: "Infoboxes provide structured summaries and enhance navigability"
+      
+    - name: image_count
+      definition: "Total number of images embedded in article"
+      computation_formula: "Count image files linked in wikitext"
+      mediawiki_api_endpoint: "/w/api.php?action=query&titles={title}&prop=images"
+      data_type: int
+      normalization: "raw_count"
+      rationale: "Relevant images enhance understanding and visual appeal"
+      
+    - name: table_count
+      definition: "Number of tables in the article"
+      computation_formula: "Count table elements in parsed HTML"
+      mediawiki_api_endpoint: "/w/api.php?action=parse&page={title}&prop=text"
+      data_type: int
+      normalization: "raw_count"
+      rationale: "Tables organize complex information and indicate detailed content"
+      
+    - name: template_count
+      definition: "Number of templates used in article"
+      computation_formula: "Count template transclusions in wikitext"
+      mediawiki_api_endpoint: "/w/api.php?action=parse&page={title}&prop=templates"
+      data_type: int
+      normalization: "raw_count"
+      rationale: "Template usage indicates adherence to Wikipedia formatting standards"
+
+  sourcing:
+    description: "Citation quality, density, and source diversity"
+    
+    - name: citation_count
+      definition: "Total number of citations in article"
+      computation_formula: "Count reference tags in wikitext"
+      mediawiki_api_endpoint: "/w/api.php?action=parse&page={title}&prop=externallinks"
+      data_type: int
+      normalization: "raw_count"
+      rationale: "Higher citation counts indicate thorough sourcing and verification"
+      
+    - name: citation_density
+      definition: "Citations per 1000 words"
+      computation_formula: "(citation_count / word_count) * 1000"
+      mediawiki_api_endpoint: "/w/api.php?action=query&titles={title}&prop=revisions&rvprop=content"
+      data_type: float
+      normalization: "citations_per_1000_words"
+      rationale: "Balanced citation density reflects well-supported information"
+      
+    - name: unique_reference_sources
+      definition: "Number of unique external sources cited"
+      computation_formula: "Count distinct domains in external links"
+      mediawiki_api_endpoint: "/w/api.php?action=parse&page={title}&prop=externallinks"
+      data_type: int
+      normalization: "raw_count"
+      rationale: "Source diversity suggests comprehensive research and balanced perspectives"
+      
+    - name: reference_quality_score
+      definition: "Proportion of references from high-quality sources"
+      computation_formula: "high_quality_sources / total_sources"
+      mediawiki_api_endpoint: "/w/api.php?action=parse&page={title}&prop=externallinks"
+      data_type: float
+      normalization: "proportion"
+      rationale: "High-quality references enhance credibility and reliability"
+      
+    - name: verifiability_score
+      definition: "Measure of source accessibility and reliability"
+      computation_formula: "Weighted score based on source accessibility and domain reputation"
+      mediawiki_api_endpoint: "/w/api.php?action=parse&page={title}&prop=externallinks"
+      data_type: float
+      normalization: "score_0_to_1"
+      rationale: "Verifiability is crucial for assessing information quality"
+      
+    - name: external_link_count
+      definition: "Total number of external links"
+      computation_formula: "Count external link tags in wikitext"
+      mediawiki_api_endpoint: "/w/api.php?action=parse&page={title}&prop=externallinks"
+      data_type: int
+      normalization: "raw_count"
+      rationale: "External links provide additional context and resources"
+
+  editorial:
+    description: "Edit history, contributor diversity, and content stability"
+    
+    - name: edit_count
+      definition: "Total number of edits made to article"
+      computation_formula: "Count revisions in article history"
+      mediawiki_api_endpoint: "/w/api.php?action=query&titles={title}&prop=revisions"
+      data_type: int
+      normalization: "raw_count"
+      rationale: "Higher edit counts indicate active maintenance and updates"
+      
+    - name: editor_count
+      definition: "Number of unique editors who contributed"
+      computation_formula: "Count distinct user IDs in revision history"
+      mediawiki_api_endpoint: "/w/api.php?action=query&titles={title}&prop=contributors"
+      data_type: int
+      normalization: "raw_count"
+      rationale: "Diverse contributor base enhances content quality and neutrality"
+      
+    - name: edit_stability
+      definition: "Frequency of reverts relative to total edits"
+      computation_formula: "(revert_count / total_edits) * 100"
+      mediawiki_api_endpoint: "/w/api.php?action=query&titles={title}&prop=revisions&rvprop=ids|flags"
+      data_type: float
+      normalization: "percentage"
+      rationale: "Lower revert rates suggest content stability and consensus"
+      
+    - name: time_since_last_edit
+      definition: "Days since last edit"
+      computation_formula: "current_date - last_edit_date"
+      mediawiki_api_endpoint: "/w/api.php?action=query&titles={title}&prop=info"
+      data_type: int
+      normalization: "days"
+      rationale: "Recent edits indicate ongoing updates, long periods suggest stability"
+      
+    - name: average_time_between_edits
+      definition: "Average interval between consecutive edits"
+      computation_formula: "(last_edit_date - first_edit_date) / (total_edits - 1)"
+      mediawiki_api_endpoint: "/w/api.php?action=query&titles={title}&prop=revisions&rvprop=timestamp"
+      data_type: float
+      normalization: "days"
+      rationale: "Shorter intervals indicate active development, longer suggest stability"
+      
+    - name: edit_persistence
+      definition: "Proportion of content retained over time"
+      computation_formula: "Compare current content with previous versions"
+      mediawiki_api_endpoint: "/w/api.php?action=query&titles={title}&prop=revisions"
+      data_type: float
+      normalization: "proportion"
+      rationale: "High persistence indicates enduring content quality"
+      
+    - name: talk_page_activity
+      definition: "Number of discussions on article's talk page"
+      computation_formula: "Count edits on associated talk page"
+      mediawiki_api_endpoint: "/w/api.php?action=query&titles=Talk:{title}&prop=info"
+      data_type: int
+      normalization: "raw_count"
+      rationale: "Active talk pages suggest ongoing collaborative improvement"
+
+  network:
+    description: "Article's position within Wikipedia's knowledge network"
+    
+    - name: internal_link_count
+      definition: "Number of internal links to other Wikipedia articles"
+      computation_formula: "Count internal wikilinks in wikitext"
+      mediawiki_api_endpoint: "/w/api.php?action=parse&page={title}&prop=links"
+      data_type: int
+      normalization: "raw_count"
+      rationale: "Internal links demonstrate integration within Wikipedia's knowledge network"
+      
+    - name: backlink_count
+      definition: "Number of other articles linking to this article"
+      computation_formula: "Count pages in 'What links here' list"
+      mediawiki_api_endpoint: "/w/api.php?action=query&list=backlinks&bltitle={title}"
+      data_type: int
+      normalization: "raw_count"
+      rationale: "High backlink counts indicate article importance and relevance"
+      
+    - name: category_count
+      definition: "Number of categories article is assigned to"
+      computation_formula: "Count category tags in wikitext"
+      mediawiki_api_endpoint: "/w/api.php?action=query&titles={title}&prop=categories"
+      data_type: int
+      normalization: "raw_count"
+      rationale: "Multiple categories indicate broad relevance and proper classification"
+      
+    - name: wikidata_item_presence
+      definition: "Whether article is linked to a Wikidata item"
+      computation_formula: "Check for Wikidata item ID in page properties"
+      mediawiki_api_endpoint: "/w/api.php?action=query&titles={title}&prop=pageprops"
+      data_type: bool
+      normalization: "binary"
+      rationale: "Wikidata linkage enhances data integration and structured information"
+      
+    - name: pageview_count
+      definition: "Total number of article pageviews"
+      computation_formula: "Retrieve pageview statistics"
+      mediawiki_api_endpoint: "/w/api.php?action=query&titles={title}&prop=pageviews"
+      data_type: int
+      normalization: "raw_count"
+      rationale: "Higher pageviews indicate article popularity and relevance"
+      
+    - name: featured_status
+      definition: "Whether article is designated as Featured Article"
+      computation_formula: "Check for Featured Article template"
+      mediawiki_api_endpoint: "/w/api.php?action=query&titles={title}&prop=templates"
+      data_type: bool
+      normalization: "binary"
+      rationale: "Featured status indicates high-quality content per Wikipedia standards"
+
+# Additional computed metrics derived from base metrics
+derived_metrics:
+  - name: maturity_score
+    definition: "Composite score combining all metrics"
+    computation_formula: "Weighted sum of normalized metrics"
+    data_type: float
+    normalization: "score_0_to_100"
+    rationale: "Overall assessment of article maturity"
+    
+  - name: content_richness
+    definition: "Measure of multimedia and structural elements"
+    computation_formula: "image_count + table_count + template_count"
+    data_type: int
+    normalization: "raw_count"
+    rationale: "Combined measure of content enhancement elements"
+    
+  - name: editorial_health
+    definition: "Measure of editorial stability and activity"
+    computation_formula: "editor_count / (edit_stability + 1)"
+    data_type: float
+    normalization: "ratio"
+    rationale: "Balance between contributor diversity and content stability"
+
+# Data collection parameters
+collection_params:
+  api_base_url: "https://en.wikipedia.org"
+  rate_limit: "60 requests per minute"
+  timeout: 30
+  retry_attempts: 3
+  cache_duration: "24 hours"
+  
+# Normalization methods
+normalization_methods:
+  raw_count: "Direct count value"
+  binary: "0 or 1 boolean value"
+  proportion: "Value between 0 and 1"
+  percentage: "Value between 0 and 100"
+  score_0_to_1: "Normalized score between 0 and 1"
+  score_0_to_100: "Normalized score between 0 and 100"
+  word_count: "Number of words"
+  words_per_section: "Average words per section"
+  citations_per_1000_words: "Citations per 1000 words"
+  days: "Number of days"
+  ratio: "Ratio between two values"
