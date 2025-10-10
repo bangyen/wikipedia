@@ -17,7 +17,7 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 from features.wikidata import wikidata_features  # noqa: E402
-from src.ingest.wiki_client import WikiClient  # noqa: E402
+from wiki_client import WikiClient  # noqa: E402
 
 
 def sample_articles(count: int = 100) -> List[str]:

@@ -15,7 +15,7 @@ import requests  # type: ignore
 from tqdm import tqdm
 
 from models.baseline import HeuristicBaselineModel
-from src.ingest.wiki_client import WikiClient
+from wiki_client import WikiClient
 
 
 class WeightCalibrator:
