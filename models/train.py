@@ -36,7 +36,7 @@ from features.extractors import (  # noqa: E402
     sourcing_features,
     structure_features,
 )
-from src.ingest.wiki_client import WikiClient  # noqa: E402
+from wiki_client import WikiClient  # noqa: E402
 
 
 class WikipediaMaturityClassifier:

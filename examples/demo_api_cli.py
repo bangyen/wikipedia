@@ -25,10 +25,10 @@ def test_cli(title: str) -> dict[str, Any]:
     """
     try:
         result = subprocess.run(
-            [sys.executable, "cli/wiki_score.py", title, "--json"],
+            [sys.executable, "api/wiki_score.py", title, "--json"],
             capture_output=True,
             text=True,
-            cwd=Path(__file__).parent,
+            cwd=Path(__file__).parent.parent,
         )
 
         if result.returncode != 0:
@@ -175,7 +175,7 @@ def main() -> None:
     try:
         subprocess.run(
             [sys.executable, "cli/wiki_score.py", "Albert Einstein"],
-            cwd=Path(__file__).parent,
+            cwd=Path(__file__).parent.parent,
         )
     except Exception as e:
         print(f"Error showing CLI output: {e}")

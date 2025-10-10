@@ -55,10 +55,10 @@ Repository = "https://github.com/yourusername/package-name"
 Issues = "https://github.com/yourusername/package-name/issues"
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["."]
 
 [tool.setuptools.package-dir]
-"" = "src"
+"" = "."
 
 [tool.black]
 line-length = 88
@@ -69,6 +69,7 @@ python_version = "3.9"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
+explicit_package_bases = true
 
 [tool.pytest.ini_options]
 minversion = "7.0"
@@ -78,8 +79,11 @@ testpaths = [
 ]
 
 [tool.coverage.run]
-source = ["src"]
+source = ["."]
 omit = [
     "*/tests/*",
     "*/test_*",
+    "venv/*",
+    "output/*",
+    "examples/*",
 ]

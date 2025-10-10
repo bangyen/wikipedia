@@ -132,7 +132,7 @@ The model extracts features from four categories:
 - `numpy` - Numerical computations
 - `yaml` - Configuration file parsing
 - `features` - Feature extraction modules
-- `src.ingest.wiki_client` - Wikipedia API client
+- `wiki_client` - Wikipedia API client
 
 ## Testing
 

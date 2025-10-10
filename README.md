@@ -12,7 +12,7 @@ A machine learning system that evaluates Wikipedia article maturity using heuris
 ### API Server
 ```bash
 # Start the FastAPI server
-python serve/api.py
+python api/api.py
 # API available at http://localhost:8002
 # Documentation at http://localhost:8002/docs
 ```
@@ -49,11 +49,9 @@ pytest  # Run tests
 
 ```plaintext
 wikipedia/
-├── cli/                    # Command-line interface
-│   ├── wiki_score.py      # CLI implementation
-│   └── README.md          # CLI documentation
-├── serve/                  # FastAPI server
-│   ├── api.py             # API implementation
+├── api/                    # API and CLI interfaces
+│   ├── api.py             # FastAPI server
+│   ├── wiki_score.py      # CLI tool
 │   └── README.md          # API documentation
 ├── features/               # Feature extraction modules
 │   ├── extractors.py      # Core feature extractors
@@ -68,10 +66,10 @@ wikipedia/
 │   ├── validate_model.py
 │   └── setup_cli.py
 ├── tests/                  # Test suite
-├── docs/                   # Documentation
-│   ├── summaries/         # Development summaries
-│   └── demos/             # Demo scripts and notebooks
-└── reports/               # Analysis reports
+├── examples/               # Demo scripts and notebooks
+├── output/                 # Analysis reports and results
+├── ui/                     # Web dashboard
+└── wiki_client.py          # Wikipedia API client
 ```
 
 ## API Endpoints
@@ -101,10 +99,10 @@ wikipedia/
 
 ## Development History
 
-See `docs/summaries/` for detailed development progress:
-- Day 4-7: Core feature extraction and baseline model
-- Day 9: Model training and validation
-- Day 11: API and CLI interfaces
+See `examples/` for demo scripts and notebooks:
+- Core feature extraction and baseline model
+- Model training and validation
+- API and CLI interfaces
 
 ## License
 
