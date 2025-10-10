@@ -14,7 +14,7 @@ from .extractors import (
 
 __all__ = [
     "structure_features",
-    "sourcing_features", 
+    "sourcing_features",
     "editorial_features",
     "network_features",
 ]
