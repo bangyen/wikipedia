@@ -261,7 +261,9 @@ class TemporalValidator:
         # Calculate performance metrics
         new_mean_score = np.mean(new_scores)
         old_mean_score = np.mean(old_scores)
-        performance_drop = ((old_mean_score - new_mean_score) / old_mean_score) * 100
+        performance_drop: float = float(
+            ((old_mean_score - new_mean_score) / old_mean_score) * 100
+        )
 
         results["performance_comparison"] = {
             "new_mean_score": new_mean_score,
@@ -480,7 +482,7 @@ class TemporalValidator:
             # Convert to binary label (1 = high quality, 0 = low quality)
             labels.append(1 if score > 0.5 else 0)
 
-        return np.array(labels)
+        return np.array(labels, dtype=np.float64)  # type: ignore
 
     def _calculate_simple_maturity_score(self, row: pd.Series) -> float:
         """Calculate a simple maturity score from DataFrame features.
@@ -523,7 +525,7 @@ class TemporalValidator:
         score += network_score * 0.20
 
         # Scale to 0-100 range
-        return min(max(score * 100, 0), 100)
+        return float(min(max(score * 100, 0), 100))
 
     def _row_to_article_data(self, row: pd.Series) -> Dict[str, Any]:
         """Convert DataFrame row back to article data format."""

@@ -7,7 +7,7 @@ with ORES articlequality scores and providing comprehensive evaluation metrics.
 
 import json
 import math
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Union
 
 import numpy as np
 import requests  # type: ignore
@@ -141,7 +141,7 @@ class ModelValidator:
             List of article titles.
         """
         url = "https://en.wikipedia.org/w/api.php"
-        params = {
+        params: Dict[str, Union[str, int]] = {
             "action": "query",
             "format": "json",
             "list": "random",
@@ -265,8 +265,12 @@ class ModelValidator:
         mae = np.mean([abs(p - t) for p, t in zip(predicted_scores, target_scores)])
 
         # Calculate R-squared
-        ss_res = np.sum([(t - p) ** 2 for p, t in zip(predicted_scores, target_scores)])
-        ss_tot = np.sum([(t - np.mean(target_scores)) ** 2 for t in target_scores])
+        ss_res: float = np.sum(
+            [(t - p) ** 2 for p, t in zip(predicted_scores, target_scores)]
+        )
+        ss_tot: float = np.sum(
+            [(t - np.mean(target_scores)) ** 2 for t in target_scores]
+        )
         r_squared = 1 - (ss_res / ss_tot) if ss_tot > 0 else 0
 
         # Calculate pillar correlations
