@@ -1,0 +1,242 @@
+{
+  "original_weights": {
+    "calibration_notes": [
+      "Weights optimized using GA/FA vs Stub/Start article examples",
+      "Sourcing pillar weighted highest due to importance of citations",
+      "Bot edit ratio has negative weight to penalize automated content",
+      "Network features emphasize inbound links as authority signal",
+      "Structure features balance content length with organization"
+    ],
+    "features": {
+      "academic_source_ratio": 0.1,
+      "authority_score": 0.06,
+      "avg_section_depth": 0.1,
+      "bot_edit_ratio": -0.1,
+      "citation_count": 0.25,
+      "citation_density": 0.15,
+      "citations_per_1k_tokens": 0.2,
+      "connectivity_score": 0.06,
+      "content_length": 0.06,
+      "editor_diversity": 0.15,
+      "external_link_count": 0.15,
+      "has_external_links": 0.15,
+      "has_infobox": 0.1,
+      "has_references": 0.12,
+      "has_reliable_sources": 0.15,
+      "inbound_links": 0.075,
+      "link_density": 0.15,
+      "major_editor_ratio": 0.2,
+      "outbound_links": 0.2,
+      "recent_activity_score": 0.15,
+      "section_count": 0.15,
+      "sections_per_1k_chars": 0.1,
+      "template_count": 0.1,
+      "total_editors": 0.2,
+      "total_revisions": 0.2,
+      "editors_7_days": 0.1,
+      "editors_30_days": 0.08
+    },
+    "metadata": {
+      "calibration_date": "2024-01-01",
+      "calibration_method": "GA/FA vs Stub/Start examples",
+      "description": "Weights for heuristic Wikipedia article maturity scoring",
+      "target_correlation": 0.6,
+      "version": "1.0"
+    },
+    "pillars": {
+      "editorial": 0.25,
+      "network": 0.0625,
+      "sourcing": 0.5,
+      "structure": 0.18749999999999997
+    },
+    "validation": {
+      "correlation_method": "pearson",
+      "min_sample_size": 100,
+      "target_correlation": 0.6,
+      "validation_split": 0.2
+    }
+  },
+  "recalibrated_weights": {
+    "calibration_notes": [
+      "Weights optimized using GA/FA vs Stub/Start article examples",
+      "Sourcing pillar weighted highest due to importance of citations",
+      "Bot edit ratio has negative weight to penalize automated content",
+      "Network features emphasize inbound links as authority signal",
+      "Structure features balance content length with organization"
+    ],
+    "features": {
+      "academic_source_ratio": 0.1,
+      "authority_score": 0.06,
+      "avg_section_depth": 0.1,
+      "bot_edit_ratio": -0.1,
+      "citation_count": 0.25,
+      "citation_density": 0.15,
+      "citations_per_1k_tokens": 0.2,
+      "connectivity_score": 0.06,
+      "content_length": 0.06,
+      "editor_diversity": 0.15,
+      "external_link_count": 0.15,
+      "has_external_links": 0.15,
+      "has_infobox": 0.1,
+      "has_references": 0.12,
+      "has_reliable_sources": 0.15,
+      "inbound_links": 0.075,
+      "link_density": 0.15,
+      "major_editor_ratio": 0.2,
+      "outbound_links": 0.2,
+      "recent_activity_score": 0.15,
+      "section_count": 0.15,
+      "sections_per_1k_chars": 0.1,
+      "template_count": 0.1,
+      "total_editors": 0.2,
+      "total_revisions": 0.2,
+      "editors_7_days": 0.1,
+      "editors_30_days": 0.08
+    },
+    "metadata": {
+      "calibration_date": "2024-01-01",
+      "calibration_method": "GA/FA vs Stub/Start examples",
+      "description": "Weights for heuristic Wikipedia article maturity scoring",
+      "target_correlation": 0.6,
+      "version": "1.0"
+    },
+    "pillars": {
+      "editorial": 0.25,
+      "network": 0.0625,
+      "sourcing": 0.5,
+      "structure": 0.18749999999999997
+    },
+    "validation": {
+      "correlation_method": "pearson",
+      "min_sample_size": 100,
+      "target_correlation": 0.6,
+      "validation_split": 0.2
+    }
+  },
+  "bias_analysis": {
+    "structure": {
+      "features": [
+        {
+          "name": "content_length",
+          "bias": 98.93813921538697,
+          "difference": -98.93813921538697
+        },
+        {
+          "name": "log_content_length",
+          "bias": 96.38809824602437,
+          "difference": -96.38809824602437
+        }
+      ],
+      "avg_bias": 97.66311873070566,
+      "recommendation": "Reduce weights significantly"
+    },
+    "sourcing": {
+      "features": [],
+      "avg_bias": 0.0,
+      "recommendation": ""
+    },
+    "editorial": {
+      "features": [],
+      "avg_bias": 0.0,
+      "recommendation": ""
+    },
+    "network": {
+      "features": [
+        {
+          "name": "inbound_links",
+          "bias": 100.0,
+          "difference": -100.0
+        },
+        {
+          "name": "total_links",
+          "bias": 100.0,
+          "difference": -100.0
+        },
+        {
+          "name": "connectivity_score",
+          "bias": 100.0,
+          "difference": -100.0
+        },
+        {
+          "name": "hub_score",
+          "bias": 100.0,
+          "difference": -100.0
+        },
+        {
+          "name": "authority_score",
+          "bias": 100.0,
+          "difference": -100.0
+        },
+        {
+          "name": "network_centrality",
+          "bias": 100.0,
+          "difference": -100.0
+        },
+        {
+          "name": "log_inbound_links",
+          "bias": 100.0,
+          "difference": -100.0
+        },
+        {
+          "name": "log_total_links",
+          "bias": 100.0,
+          "difference": -100.0
+        },
+        {
+          "name": "pagerank_score",
+          "bias": 5.18568643828802,
+          "difference": 5.18568643828802
+        },
+        {
+          "name": "closeness_centrality",
+          "bias": 100.0,
+          "difference": -100.0
+        },
+        {
+          "name": "structural_holes",
+          "bias": 100.0,
+          "difference": -100.0
+        },
+        {
+          "name": "core_periphery_score",
+          "bias": 100.0,
+          "difference": -100.0
+        },
+        {
+          "name": "connectivity_ratio",
+          "bias": 100.0,
+          "difference": -100.0
+        },
+        {
+          "name": "orphan_score",
+          "bias": 7.927891225804022,
+          "difference": 7.927891225804022
+        },
+        {
+          "name": "isolation_score",
+          "bias": 9.75981865089693,
+          "difference": 9.75981865089693
+        },
+        {
+          "name": "dead_end_score",
+          "bias": 100.0,
+          "difference": -100.0
+        },
+        {
+          "name": "assortativity",
+          "bias": 100.0,
+          "difference": -100.0
+        }
+      ],
+      "avg_bias": 83.69843507735229,
+      "recommendation": "Reduce weights significantly"
+    }
+  },
+  "validation_results": {
+    "original_performance_drop": 99.95405792746352,
+    "estimated_new_drop": 99.95405792746352,
+    "estimated_improvement": 0.0,
+    "validation_passed": false
+  },
+  "timestamp": "2025-10-10T18:26:03.647588"
+}
