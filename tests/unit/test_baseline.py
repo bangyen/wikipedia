@@ -70,10 +70,10 @@ class TestHeuristicBaselineModel:
         assert model.weights_file == "models/weights.yaml"
         assert "pillars" in model.weights
         assert "features" in model.weights
-        assert model.pillar_weights["structure"] == 0.25
-        assert model.pillar_weights["sourcing"] == 0.30
-        assert model.pillar_weights["editorial"] == 0.25
-        assert model.pillar_weights["network"] == 0.20
+        assert model.pillar_weights["structure"] == 0.3
+        assert model.pillar_weights["sourcing"] == 0.4
+        assert model.pillar_weights["editorial"] == 0.2
+        assert model.pillar_weights["network"] == 0.1
 
     def test_model_initialization_with_custom_weights(self) -> None:
         """Test model initialization with custom weights file."""
