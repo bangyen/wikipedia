@@ -595,3 +595,35 @@ def _extract_internal_links(article_data: Dict[str, Any]) -> List[Dict[str, Any]
                 break
 
     return internal_links if isinstance(internal_links, list) else []
+
+
+def all_features(article_data: Dict[str, Any]) -> Dict[str, float]:
+    """Extract all features from Wikipedia article data.
+
+    Combines features from all pillars including structure, sourcing,
+    editorial activity, network connectivity, and link graph metrics.
+
+    Args:
+        article_data: Raw Wikipedia article JSON data
+
+    Returns:
+        Dictionary containing all extracted features
+    """
+    features = {}
+
+    # Extract features from each pillar
+    features.update(structure_features(article_data))
+    features.update(sourcing_features(article_data))
+    features.update(editorial_features(article_data))
+    features.update(network_features(article_data))
+
+    # Import and add link graph features
+    try:
+        from features.linkgraph import linkgraph_features
+
+        features.update(linkgraph_features(article_data))
+    except ImportError:
+        # Fallback if linkgraph module is not available
+        pass
+
+    return features
