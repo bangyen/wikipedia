@@ -1,0 +1,159 @@
+{
+  "new_articles": {
+    "count": 300
+  },
+  "old_articles": {
+    "count": 700
+  },
+  "performance_comparison": {
+    "new_mean_score": 0.000318,
+    "old_mean_score": 0.6921760000000002,
+    "performance_drop_percent": 99.95405792746352,
+    "new_score_std": 0.005498734036121405,
+    "old_score_std": 2.184814810353108
+  },
+  "feature_analysis": {
+    "feature_differences": {
+      "content_length": {
+        "new_mean": 1.59,
+        "old_mean": 149.73714285714286,
+        "relative_difference_percent": -98.93813921538697,
+        "absolute_difference": -148.14714285714285
+      },
+      "token_count": {
+        "new_mean": 0.2966666666666667,
+        "old_mean": 22.05142857142857,
+        "relative_difference_percent": -98.65466010192623,
+        "absolute_difference": -21.754761904761903
+      },
+      "inbound_links": {
+        "new_mean": 0.0,
+        "old_mean": 7.941428571428571,
+        "relative_difference_percent": -100.0,
+        "absolute_difference": -7.941428571428571
+      },
+      "total_links": {
+        "new_mean": 0.0,
+        "old_mean": 7.941428571428571,
+        "relative_difference_percent": -100.0,
+        "absolute_difference": -7.941428571428571
+      },
+      "log_content_length": {
+        "new_mean": 0.02055838830296114,
+        "old_mean": 0.5691845931394042,
+        "relative_difference_percent": -96.38809824602437,
+        "absolute_difference": -0.548626204836443
+      },
+      "log_inbound_links": {
+        "new_mean": 0.0,
+        "old_mean": 0.376216180358391,
+        "relative_difference_percent": -100.0,
+        "absolute_difference": -0.376216180358391
+      },
+      "log_total_links": {
+        "new_mean": 0.0,
+        "old_mean": 0.376216180358391,
+        "relative_difference_percent": -100.0,
+        "absolute_difference": -0.376216180358391
+      },
+      "closeness_centrality": {
+        "new_mean": 0.0,
+        "old_mean": 0.09571428571428571,
+        "relative_difference_percent": -100.0,
+        "absolute_difference": -0.09571428571428571
+      },
+      "core_periphery_score": {
+        "new_mean": 0.0,
+        "old_mean": 0.09571428571428571,
+        "relative_difference_percent": -100.0,
+        "absolute_difference": -0.09571428571428571
+      },
+      "isolation_score": {
+        "new_mean": 1.0,
+        "old_mean": 0.9110802225180501,
+        "relative_difference_percent": 9.75981865089693,
+        "absolute_difference": 0.0889197774819499
+      },
+      "structural_holes": {
+        "new_mean": 0.0,
+        "old_mean": 0.08714285714285715,
+        "relative_difference_percent": -100.0,
+        "absolute_difference": -0.08714285714285715
+      },
+      "assortativity": {
+        "new_mean": 0.0,
+        "old_mean": -0.08714285714285715,
+        "relative_difference_percent": -100.0,
+        "absolute_difference": 0.08714285714285715
+      },
+      "orphan_score": {
+        "new_mean": 1.0,
+        "old_mean": 0.9265445554827205,
+        "relative_difference_percent": 7.927891225804022,
+        "absolute_difference": 0.07345544451727948
+      },
+      "hub_score": {
+        "new_mean": 0.0,
+        "old_mean": 0.0638095238095238,
+        "relative_difference_percent": -100.0,
+        "absolute_difference": -0.0638095238095238
+      },
+      "connectivity_score": {
+        "new_mean": 0.0,
+        "old_mean": 0.05742857142857143,
+        "relative_difference_percent": -100.0,
+        "absolute_difference": -0.05742857142857143
+      },
+      "pagerank_score": {
+        "new_mean": 1.0,
+        "old_mean": 0.9506996948550558,
+        "relative_difference_percent": 5.18568643828802,
+        "absolute_difference": 0.04930030514494421
+      },
+      "dead_end_score": {
+        "new_mean": 0.0,
+        "old_mean": 0.047857142857142855,
+        "relative_difference_percent": -100.0,
+        "absolute_difference": -0.047857142857142855
+      },
+      "network_centrality": {
+        "new_mean": 0.0,
+        "old_mean": 0.038499262875339085,
+        "relative_difference_percent": -100.0,
+        "absolute_difference": -0.038499262875339085
+      },
+      "authority_score": {
+        "new_mean": 0.0,
+        "old_mean": 0.0319047619047619,
+        "relative_difference_percent": -100.0,
+        "absolute_difference": -0.0319047619047619
+      },
+      "connectivity_ratio": {
+        "new_mean": 0.0,
+        "old_mean": 0.006794508232335839,
+        "relative_difference_percent": -100.0,
+        "absolute_difference": -0.006794508232335839
+      }
+    },
+    "summary": {
+      "total_features_analyzed": 78,
+      "largest_difference": [
+        "content_length",
+        {
+          "new_mean": 1.59,
+          "old_mean": 149.73714285714286,
+          "relative_difference_percent": -98.93813921538697,
+          "absolute_difference": -148.14714285714285
+        }
+      ]
+    }
+  },
+  "recommendations": [
+    "\u26a0\ufe0f  Performance drop of 100.0% exceeds 10% threshold. Model shows significant bias toward old articles.",
+    "\ud83d\udd27 Consider reducing weights for structure-based features that show significant bias toward old articles: content_length (-98.9%)",
+    "\ud83d\udd27 Network features show significant temporal bias. Consider implementing age-normalized network metrics or reducing their weights.",
+    "\ud83d\udcca Monitor temporal performance regularly to detect drift",
+    "\ud83d\udd04 Consider implementing online learning to adapt to new articles",
+    "\u2696\ufe0f  Balance feature weights between structure and content quality"
+  ]
+}
