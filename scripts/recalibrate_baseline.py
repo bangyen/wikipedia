@@ -8,11 +8,11 @@ based on temporal validation results.
 import json
 import sys
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import numpy as np
 import pandas as pd
-import yaml
+import yaml  # type: ignore
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
@@ -47,7 +47,7 @@ class BaselineRecalibrator:
             Dictionary containing validation results
         """
         with open(results_path, "r") as f:
-            return json.load(f)
+            return json.load(f)  # type: ignore
 
     def analyze_temporal_bias(
         self, validation_results: Dict[str, Any]
@@ -63,7 +63,7 @@ class BaselineRecalibrator:
         feature_diffs = validation_results["feature_analysis"]["feature_differences"]
 
         # Categorize features by type
-        structure_features = [
+        structure_features: List[str] = [
             "section_count",
             "content_length",
             "has_infobox",
@@ -76,7 +76,7 @@ class BaselineRecalibrator:
             "log_section_count",
         ]
 
-        sourcing_features = [
+        sourcing_features: List[str] = [
             "citation_count",
             "citations_per_1k_tokens",
             "external_link_count",
@@ -90,7 +90,7 @@ class BaselineRecalibrator:
             "log_external_link_count",
         ]
 
-        editorial_features = [
+        editorial_features: List[str] = [
             "total_editors",
             "editors_90_days",
             "editors_30_days",
@@ -106,7 +106,7 @@ class BaselineRecalibrator:
             "log_total_revisions",
         ]
 
-        network_features = [
+        network_features: List[str] = [
             "inbound_links",
             "outbound_links",
             "internal_links",
@@ -156,34 +156,37 @@ class BaselineRecalibrator:
             ("editorial", editorial_features),
             ("network", network_features),
         ]:
-            biases = []
+            biases: List[float] = []
             for feature in feature_list:
                 if feature in feature_diffs:
                     bias = abs(feature_diffs[feature]["relative_difference_percent"])
                     biases.append(bias)
-                    bias_analysis[feature_type]["features"].append(
-                        {
-                            "name": feature,
-                            "bias": bias,
-                            "difference": feature_diffs[feature][
-                                "relative_difference_percent"
-                            ],
-                        }
-                    )
+                    features_list = bias_analysis[feature_type]["features"]
+                    if isinstance(features_list, list):
+                        features_list.append(
+                            {
+                                "name": feature,
+                                "bias": bias,
+                                "difference": feature_diffs[feature][
+                                    "relative_difference_percent"
+                                ],
+                            }
+                        )
 
             if biases:
                 bias_analysis[feature_type]["avg_bias"] = np.mean(biases)
 
                 # Generate recommendations based on bias level
-                if bias_analysis[feature_type]["avg_bias"] > 50:
+                avg_bias = bias_analysis[feature_type]["avg_bias"]
+                if isinstance(avg_bias, (int, float)) and float(avg_bias) > 50:
                     bias_analysis[feature_type][
                         "recommendation"
                     ] = "Reduce weights significantly"
-                elif bias_analysis[feature_type]["avg_bias"] > 20:
+                elif isinstance(avg_bias, (int, float)) and float(avg_bias) > 20:
                     bias_analysis[feature_type][
                         "recommendation"
                     ] = "Reduce weights moderately"
-                elif bias_analysis[feature_type]["avg_bias"] > 10:
+                elif isinstance(avg_bias, (int, float)) and float(avg_bias) > 10:
                     bias_analysis[feature_type][
                         "recommendation"
                     ] = "Reduce weights slightly"

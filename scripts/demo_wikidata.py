@@ -8,6 +8,7 @@ features for a sample of Wikipedia articles and showing the results.
 import json
 import sys
 from pathlib import Path
+from typing import Any, Dict, List
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
@@ -36,7 +37,7 @@ def demo_wikidata_features() -> None:
     wiki_client = WikiClient()
     wikidata_client = WikidataClient()
 
-    results = []
+    results: List[Dict[str, Any]] = []
 
     for i, title in enumerate(sample_articles, 1):
         print(f"\n📖 {i}. Processing: {title}")
@@ -97,23 +98,34 @@ def demo_wikidata_features() -> None:
     # Feature coverage
     if results:
         has_data_count = sum(
-            1 for r in results if r["wikidata_data"]["wikidata_id"] is not None
+            1
+            for r in results
+            if isinstance(r, dict)
+            and r.get("wikidata_data", {}).get("wikidata_id") is not None
         )
         coverage = has_data_count / len(results) * 100
         print(f"📈 Wikidata coverage: {coverage:.1f}%")
 
         # Average metrics
         avg_statements = sum(
-            r["wikidata_data"]["total_statements"] for r in results
+            r.get("wikidata_data", {}).get("total_statements", 0)
+            for r in results
+            if isinstance(r, dict)
         ) / len(results)
         avg_referenced = sum(
-            r["wikidata_data"]["referenced_statements"] for r in results
+            r.get("wikidata_data", {}).get("referenced_statements", 0)
+            for r in results
+            if isinstance(r, dict)
         ) / len(results)
         avg_sitelinks = sum(
-            r["wikidata_data"]["sitelinks_count"] for r in results
+            r.get("wikidata_data", {}).get("sitelinks_count", 0)
+            for r in results
+            if isinstance(r, dict)
         ) / len(results)
         avg_completeness = sum(
-            r["wikidata_data"]["completeness_score"] for r in results
+            r.get("wikidata_data", {}).get("completeness_score", 0)
+            for r in results
+            if isinstance(r, dict)
         ) / len(results)
 
         print(f"📊 Average Statements: {avg_statements:.1f}")
@@ -134,7 +146,11 @@ def demo_wikidata_features() -> None:
     if results:
         print("\n🔧 Available Wikidata Features:")
         print("-" * 30)
-        feature_names = list(results[0]["wikidata_features"].keys())
+        feature_names = (
+            list(results[0].get("wikidata_features", {}).keys())
+            if results and isinstance(results[0], dict)
+            else []
+        )
         for name in sorted(feature_names):
             print(f"   • {name}")
 

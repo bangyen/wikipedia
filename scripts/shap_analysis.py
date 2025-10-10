@@ -15,8 +15,8 @@ from typing import Any, Dict, List
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import shap
-from sklearn.model_selection import train_test_split
+import shap  # type: ignore
+from sklearn.model_selection import train_test_split  # type: ignore
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
@@ -47,10 +47,10 @@ class SHAPAnalyzer:
         self.feature_names: List[str] = []
         self.explainer: Any = None
         self.shap_values: Any = None
-        self.X_train: pd.DataFrame = None
-        self.X_test: pd.DataFrame = None
-        self.y_train: np.ndarray = None
-        self.y_test: np.ndarray = None
+        self.X_train: pd.DataFrame = None  # type: ignore
+        self.X_test: pd.DataFrame = None  # type: ignore
+        self.y_train: np.ndarray = None  # type: ignore
+        self.y_test: np.ndarray = None  # type: ignore
 
     def load_model(self) -> None:
         """Load the trained LightGBM model and feature names."""
@@ -83,7 +83,7 @@ class SHAPAnalyzer:
         # Split data
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
             X, y, test_size=0.2, random_state=self.random_state, stratify=y
-        )
+        )  # type: ignore
 
         print(f"Training set: {self.X_train.shape[0]} samples")
         print(f"Test set: {self.X_test.shape[0]} samples")
@@ -265,7 +265,7 @@ class SHAPAnalyzer:
 
         try:
             # Create interactive summary plot using Plotly backend
-            import plotly.graph_objects as go
+            import plotly.graph_objects as go  # type: ignore
 
             # Calculate mean absolute SHAP values for top features
             mean_abs_shap = np.abs(shap_values_plot).mean(0)

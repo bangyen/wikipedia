@@ -10,7 +10,7 @@ import json
 import random
 import sys
 from pathlib import Path
-from typing import List
+from typing import Any, Dict, List
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
@@ -156,7 +156,7 @@ def validate_wikidata_features() -> dict:
     # Initialize clients
     wiki_client = WikiClient()
 
-    results = {
+    results: Dict[str, Any] = {
         "total_articles": len(articles),
         "articles_with_wikidata": 0,
         "articles_without_wikidata": 0,
@@ -181,8 +181,12 @@ def validate_wikidata_features() -> dict:
             has_wikidata = wikidata_feats.get("wikidata_has_data", 0.0) > 0
 
             if has_wikidata:
-                results["articles_with_wikidata"] += 1
-                results["successful_extractions"] += 1
+                results["articles_with_wikidata"] = (
+                    int(results["articles_with_wikidata"]) + 1
+                )
+                results["successful_extractions"] = (
+                    int(results["successful_extractions"]) + 1
+                )
 
                 # Store sample results
                 sample_result = {
@@ -202,20 +206,24 @@ def validate_wikidata_features() -> dict:
                         "wikidata_completeness_score", 0
                     ),
                 }
-                results["sample_results"].append(sample_result)
+                sample_results = results["sample_results"]
+                if isinstance(sample_results, list):
+                    sample_results.append(sample_result)
 
             else:
-                results["articles_without_wikidata"] += 1
+                results["articles_without_wikidata"] = (
+                    int(results["articles_without_wikidata"]) + 1
+                )
                 print(f"   ⚠️  No Wikidata data found for: {title}")
 
         except Exception as e:
-            results["failed_extractions"] += 1
+            results["failed_extractions"] = int(results["failed_extractions"]) + 1
             print(f"   ❌ Failed to process {title}: {e}")
 
     # Calculate coverage percentage
-    results["coverage_percentage"] = (
-        results["articles_with_wikidata"] / results["total_articles"] * 100
-    )
+    articles_with_wikidata = int(results["articles_with_wikidata"])
+    total_articles = int(results["total_articles"])
+    results["coverage_percentage"] = articles_with_wikidata / total_articles * 100
 
     # Calculate feature statistics
     if results["sample_results"]:
@@ -228,7 +236,13 @@ def validate_wikidata_features() -> dict:
             "wikidata_referenced_ratio",
             "wikidata_completeness_score",
         ]:
-            values = [r[key] for r in results["sample_results"]]
+            sample_results = results["sample_results"]
+            if isinstance(sample_results, list):
+                values = [
+                    r[key] for r in sample_results if isinstance(r, dict) and key in r
+                ]
+            else:
+                values = []
             stats[key] = {
                 "mean": sum(values) / len(values),
                 "min": min(values),

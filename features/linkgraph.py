@@ -86,7 +86,7 @@ def _build_local_graph(
     Returns:
         NetworkX directed graph representing local link structure
     """
-    graph = nx.DiGraph()
+    graph: nx.DiGraph = nx.DiGraph()
 
     title = article_data.get("title", "")
     if not title:
@@ -190,7 +190,9 @@ def _compute_structural_metrics(graph: nx.DiGraph, title: str) -> Dict[str, floa
     try:
         # Local clustering coefficient
         clustering = nx.clustering(graph.to_undirected())
-        features["clustering_coefficient"] = float(clustering.get(title, 0.0))
+        features["clustering_coefficient"] = float(
+            clustering.get(title, 0.0) if isinstance(clustering, dict) else 0.0
+        )
 
         # Structural holes (effective size and efficiency)
         try:
@@ -221,10 +223,10 @@ def _compute_structural_metrics(graph: nx.DiGraph, title: str) -> Dict[str, floa
         # Core-periphery score (simplified)
         try:
             # Use degree as a proxy for core-periphery position
-            degree = graph.degree(title)
-            max_degree = (
-                max(dict(graph.degree()).values()) if graph.number_of_nodes() > 0 else 1
-            )
+            degree_dict = dict(graph.degree())  # type: ignore
+            degree_value = degree_dict.get(title, 0)
+            degree = int(degree_value) if isinstance(degree_value, (int, float)) else 0
+            max_degree = max(degree_dict.values()) if graph.number_of_nodes() > 0 else 1
             features["core_periphery_score"] = (
                 float(degree / max_degree) if max_degree > 0 else 0.0
             )

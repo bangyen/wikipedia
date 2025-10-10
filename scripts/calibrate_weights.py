@@ -8,7 +8,7 @@ ORES articlequality scores.
 
 import json
 import math
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Union
 
 import numpy as np
 import requests  # type: ignore
@@ -88,18 +88,10 @@ class WeightCalibrator:
         if category in ["GA", "FA"]:
             # For GA/FA, we'll use featured articles list as proxy
             url = "https://en.wikipedia.org/w/api.php"
-            params = {
-                "action": "query",
-                "format": "json",
-                "list": "random",
-                "rnnamespace": 0,
-                "rnlimit": limit,
-                "rnfilterredir": "nonredirects",
-            }
         else:
             # For Stub/Start, use random articles (simplified)
             url = "https://en.wikipedia.org/w/api.php"
-            params = {
+            params_stub: Dict[str, Union[str, int]] = {
                 "action": "query",
                 "format": "json",
                 "list": "random",
@@ -109,7 +101,7 @@ class WeightCalibrator:
             }
 
         try:
-            response = requests.get(url, params=params, timeout=30)
+            response = requests.get(url, params=params_stub, timeout=30)
             response.raise_for_status()
             data = response.json()
 

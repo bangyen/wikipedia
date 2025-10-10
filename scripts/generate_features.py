@@ -49,9 +49,11 @@ def generate_feature_dataset(
 
             # Extract all features including link graph metrics
             features = all_features(article_data)
-            features["title"] = title
+            # Convert features dict to allow string values for title
+            features_with_title: Dict[str, Any] = dict(features)
+            features_with_title["title"] = title
 
-            all_features_list.append(features)
+            all_features_list.append(features_with_title)
 
         except Exception as e:
             print(f"Error processing {title}: {e}")

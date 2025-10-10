@@ -15,7 +15,7 @@ from typing import Any, Dict, Tuple
 import lightgbm as lgb
 import numpy as np
 import pandas as pd
-from sklearn.metrics import (
+from sklearn.metrics import (  # type: ignore
     accuracy_score,
     auc,
     classification_report,
@@ -23,7 +23,7 @@ from sklearn.metrics import (
     precision_recall_curve,
     roc_auc_score,
 )
-from sklearn.model_selection import StratifiedKFold, train_test_split
+from sklearn.model_selection import StratifiedKFold, train_test_split  # type: ignore
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
