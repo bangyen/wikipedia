@@ -128,14 +128,23 @@ def _compute_centrality_metrics(graph: nx.DiGraph, title: str) -> Dict[str, floa
     try:
         # PageRank centrality
         if graph.number_of_nodes() > 1:
-            pagerank = nx.pagerank(graph, alpha=0.85, max_iter=100, tol=1e-06)
-            features["pagerank_score"] = float(pagerank.get(title, 0.0))
+            try:
+                pagerank = nx.pagerank(graph, alpha=0.85, max_iter=100, tol=1e-06)
+                pr_value = pagerank.get(title, 0.0)
+                # Ensure we have a valid numeric value
+                features["pagerank_score"] = (
+                    float(pr_value) if pr_value is not None else 0.0
+                )
+            except (nx.PowerIterationFailedConvergence, ZeroDivisionError):
+                # Fallback to uniform distribution if PageRank fails
+                features["pagerank_score"] = 1.0 / graph.number_of_nodes()
         else:
             features["pagerank_score"] = 1.0 if graph.number_of_nodes() == 1 else 0.0
 
         # Degree centrality
         degree_centrality = nx.degree_centrality(graph)
-        features["degree_centrality"] = float(degree_centrality.get(title, 0.0))
+        dc_value = degree_centrality.get(title, 0.0)
+        features["degree_centrality"] = float(dc_value) if dc_value is not None else 0.0
 
         # Betweenness centrality (only for connected components)
         if graph.number_of_nodes() > 1:
