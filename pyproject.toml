@@ -71,6 +71,25 @@ warn_unused_configs = true
 disallow_untyped_defs = true
 explicit_package_bases = true
 
+# Ignore missing imports for optional dependencies
+[[tool.mypy.overrides]]
+module = [
+    "networkx",
+    "pandas",
+    "tqdm",
+    "lightgbm",
+    "matplotlib.*",
+    "flask",
+    "flask_cors",
+    "yaml",
+    "colorama",
+    "fastapi",
+    "fastapi.*",
+    "pydantic",
+    "uvicorn",
+]
+ignore_missing_imports = true
+
 [tool.pytest.ini_options]
 minversion = "7.0"
 addopts = "-ra -q"
