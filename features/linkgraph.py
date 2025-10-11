@@ -128,7 +128,7 @@ def _compute_centrality_metrics(graph: nx.DiGraph, title: str) -> Dict[str, floa
     try:
         # PageRank centrality
         if graph.number_of_nodes() > 1:
-            pagerank = nx.pagerank(graph, alpha=0.85, max_iter=100)
+            pagerank = nx.pagerank(graph, alpha=0.85, max_iter=100, tol=1e-06)
             features["pagerank_score"] = float(pagerank.get(title, 0.0))
         else:
             features["pagerank_score"] = 1.0 if graph.number_of_nodes() == 1 else 0.0
