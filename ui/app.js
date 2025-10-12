@@ -80,10 +80,11 @@ class WikipediaDashboard {
         }
     }
 
-    getSampleData(title) {
-        // Sample articles demonstrating full quality spectrum (0-100)
-        const sampleArticles = {
-            // Featured/Exceptional tier (95-96) - Featured Articles with all features detected
+        getSampleData(title) {
+            // Sample articles demonstrating full quality spectrum (0-100)
+            // Note: Scores reflect stub penalty for articles with minimal content
+            const sampleArticles = {
+            // Featured/Exceptional tier (95-96)
             'Albert Einstein': {
                 title: 'Albert Einstein',
                 maturity_score: 95.5,
@@ -114,9 +115,10 @@ class WikipediaDashboard {
                     network: 76.7
                 }
             },
+            // Good tier (85-89)
             'Zoboomafoo': {
                 title: 'Zoboomafoo',
-                maturity_score: 85.0,
+                maturity_score: 88.6,
                 pillar_scores: {
                     structure: 77.8,
                     sourcing: 100.0,
@@ -124,10 +126,9 @@ class WikipediaDashboard {
                     network: 76.7
                 }
             },
-            // High Quality tier (80-85) - Good Articles
             'Python (programming language)': {
                 title: 'Python (programming language)',
-                maturity_score: 82.4,
+                maturity_score: 86.2,
                 pillar_scores: {
                     structure: 88.8,
                     sourcing: 77.5,
@@ -137,7 +138,7 @@ class WikipediaDashboard {
             },
             'Taylor Swift': {
                 title: 'Taylor Swift',
-                maturity_score: 81.8,
+                maturity_score: 85.6,
                 pillar_scores: {
                     structure: 90.0,
                     sourcing: 75.0,
@@ -145,10 +146,9 @@ class WikipediaDashboard {
                     network: 76.7
                 }
             },
-            // Good/Developing tier (50-74)
             'Banana slug': {
                 title: 'Banana slug',
-                maturity_score: 65.2,
+                maturity_score: 83.6,
                 pillar_scores: {
                     structure: 54.0,
                     sourcing: 75.0,
@@ -156,21 +156,82 @@ class WikipediaDashboard {
                     network: 76.0
                 }
             },
-            // Stub tier (0-49)
+            // Developing tier (50-59) - Stubs with penalty
+            'Alexander Bittner': {
+                title: 'Alexander Bittner',
+                maturity_score: 53.6,
+                pillar_scores: {
+                    structure: 50.0,
+                    sourcing: 60.0,
+                    editorial: 50.0,
+                    network: 55.0
+                }
+            },
+            'Zimmert set': {
+                title: 'Zimmert set',
+                maturity_score: 49.7,
+                pillar_scores: {
+                    structure: 45.0,
+                    sourcing: 55.0,
+                    editorial: 48.0,
+                    network: 50.0
+                }
+            },
+            // Stub tier (0-49) - Severe stub penalty
+            'Bukjeju County': {
+                title: 'Bukjeju County',
+                maturity_score: 41.3,
+                pillar_scores: {
+                    structure: 40.0,
+                    sourcing: 45.0,
+                    editorial: 40.0,
+                    network: 42.0
+                }
+            },
+            'Echinolampas posterocrassa': {
+                title: 'Echinolampas posterocrassa',
+                maturity_score: 33.3,
+                pillar_scores: {
+                    structure: 30.0,
+                    sourcing: 35.0,
+                    editorial: 32.0,
+                    network: 35.0
+                }
+            },
+            'Karolína Bednářová': {
+                title: 'Karolína Bednářová',
+                maturity_score: 29.0,
+                pillar_scores: {
+                    structure: 25.0,
+                    sourcing: 30.0,
+                    editorial: 28.0,
+                    network: 32.0
+                }
+            },
             'List of colours': {
                 title: 'List of colours',
-                maturity_score: 9.8,
+                maturity_score: 10.5,
                 pillar_scores: {
-                    structure: 9.0,
+                    structure: 10.0,
                     sourcing: 0.0,
-                    editorial: 22.0,
-                    network: 28.0
+                    editorial: 20.0,
+                    network: 15.0
+                }
+            },
+            'List of animals': {
+                title: 'List of animals',
+                maturity_score: 3.0,
+                pillar_scores: {
+                    structure: 5.0,
+                    sourcing: 0.0,
+                    editorial: 5.0,
+                    network: 5.0
                 }
             }
         };
-        
-        return sampleArticles[title];
-    }
+            
+            return sampleArticles[title];
+        }
 
     generateMockData(title) {
         // Generate realistic mock data on 0-100 scale

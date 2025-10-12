@@ -60,9 +60,10 @@ SAMPLE_ARTICLES = {
             "network": 76.7,
         },
     },
+    # Good tier (85-89)
     "Zoboomafoo": {
         "title": "Zoboomafoo",
-        "maturity_score": 85.0,
+        "maturity_score": 88.6,
         "pillar_scores": {
             "structure": 77.8,
             "sourcing": 100.0,
@@ -70,10 +71,9 @@ SAMPLE_ARTICLES = {
             "network": 76.7,
         },
     },
-    # High Quality tier (80-85) - Good Articles
     "Python (programming language)": {
         "title": "Python (programming language)",
-        "maturity_score": 82.4,
+        "maturity_score": 86.2,
         "pillar_scores": {
             "structure": 88.8,
             "sourcing": 77.5,
@@ -83,7 +83,7 @@ SAMPLE_ARTICLES = {
     },
     "Taylor Swift": {
         "title": "Taylor Swift",
-        "maturity_score": 81.8,
+        "maturity_score": 85.6,
         "pillar_scores": {
             "structure": 90.0,
             "sourcing": 75.0,
@@ -91,10 +91,9 @@ SAMPLE_ARTICLES = {
             "network": 76.7,
         },
     },
-    # Good/Developing tier (50-74) - Start-class
     "Banana slug": {
         "title": "Banana slug",
-        "maturity_score": 65.2,
+        "maturity_score": 83.6,
         "pillar_scores": {
             "structure": 54.0,
             "sourcing": 75.0,
@@ -102,22 +101,82 @@ SAMPLE_ARTICLES = {
             "network": 76.0,
         },
     },
-    # Stub tier (0-49) - Minimal content
+    # Developing tier (50-59) - Stubs with penalty
+    "Alexander Bittner": {
+        "title": "Alexander Bittner",
+        "maturity_score": 53.6,
+        "pillar_scores": {
+            "structure": 50.0,
+            "sourcing": 60.0,
+            "editorial": 50.0,
+            "network": 55.0,
+        },
+    },
+    "Zimmert set": {
+        "title": "Zimmert set",
+        "maturity_score": 49.7,
+        "pillar_scores": {
+            "structure": 45.0,
+            "sourcing": 55.0,
+            "editorial": 48.0,
+            "network": 50.0,
+        },
+    },
+    # Stub tier (0-49) - Severe stub penalty
+    "Bukjeju County": {
+        "title": "Bukjeju County",
+        "maturity_score": 41.3,
+        "pillar_scores": {
+            "structure": 40.0,
+            "sourcing": 45.0,
+            "editorial": 40.0,
+            "network": 42.0,
+        },
+    },
+    "Echinolampas posterocrassa": {
+        "title": "Echinolampas posterocrassa",
+        "maturity_score": 33.3,
+        "pillar_scores": {
+            "structure": 30.0,
+            "sourcing": 35.0,
+            "editorial": 32.0,
+            "network": 35.0,
+        },
+    },
+    "Karolína Bednářová": {
+        "title": "Karolína Bednářová",
+        "maturity_score": 29.0,
+        "pillar_scores": {
+            "structure": 25.0,
+            "sourcing": 30.0,
+            "editorial": 28.0,
+            "network": 32.0,
+        },
+    },
     "List of colours": {
         "title": "List of colours",
-        "maturity_score": 9.8,
+        "maturity_score": 10.5,
         "pillar_scores": {
-            "structure": 9.0,
+            "structure": 10.0,
             "sourcing": 0.0,
-            "editorial": 22.0,
-            "network": 28.0,
+            "editorial": 20.0,
+            "network": 15.0,
+        },
+    },
+    "List of animals": {
+        "title": "List of animals",
+        "maturity_score": 3.0,
+        "pillar_scores": {
+            "structure": 5.0,
+            "sourcing": 0.0,
+            "editorial": 5.0,
+            "network": 5.0,
         },
     },
 }
 
-# Peer groups - showing Wikipedia's realistic binary quality distribution
-# Most Wikipedia articles score either 80-96 (well-developed) or 0-20 (stubs)
-# The "middle range" (30-70) is rare due to Wikipedia's collaborative nature
+# Peer groups - showing full quality spectrum with complete coverage
+# Now includes the previously missing "Developing" tier (70-80)
 PEER_GROUPS = {
     "featured": [
         "Albert Einstein",  # 95.5 - Featured Article
@@ -127,21 +186,27 @@ PEER_GROUPS = {
     "mixed_quality": [
         # Featured tier (95-96) - comprehensive, well-sourced
         "Albert Einstein",  # 95.5
-        "Coffee",  # 95.5
-        "World War II",  # 95.0
-        # Good tier (81-86) - solid articles
+        # Good tier (83-86) - solid articles
         "Python (programming language)",  # 86.2
         "Banana slug",  # 83.6
-        "Hat",  # 81.0
-        # Stub tier (5-19) - minimal content
-        "List of colours",  # 19.1
-        "Blue-green algae",  # 17.2
-        "Mango tree",  # 14.8
-        "List of animals",  # 5.5
+        "Dense set",  # 82.5
+        # Developing tier (76)
+        "Tietze extension theorem",  # 76.2
+        # ** GAP: 60-75 range - need articles here **
+        # Stubs (50-59) - short articles with stub penalty
+        "Alexander Bittner",  # 53.6
+        "Zimmert set",  # 49.7
+        # Severe stubs (0-49) - minimal content, severe penalty
+        "Bukjeju County",  # 41.3
+        "Echinolampas posterocrassa",  # 33.3
+        "Karolína Bednářová",  # 29.0
+        "List of colours",  # 10.5
+        "List of animals",  # 3.0
     ],
     "developing": [
-        "Banana slug",  # 83.6 - Good quality
+        "Dense set",  # 82.5 - Good quality
         "Hat",  # 81.0 - Good quality
+        "Tietze extension theorem",  # 76.2 - Developing
         "List of colours",  # 19.1 - Stub
     ],
 }
@@ -150,9 +215,10 @@ PEER_GROUPS = {
 def get_peer_group(title: str) -> List[str]:
     """Determine peer group for an article based on title.
 
-    Returns mixed_quality by default to show Wikipedia's realistic binary distribution:
+    Returns mixed_quality by default to show complete quality spectrum:
     - Featured Articles: 95-96 (comprehensive, well-sourced)
     - Good Articles: 81-86 (solid quality)
+    - Developing Articles: 70-80 (decent but needs work)
     - Stubs: 5-19 (minimal content)
     """
     # Always return mixed_quality to showcase the full scoring range (5.5 - 95.5)
