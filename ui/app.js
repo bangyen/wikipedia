@@ -83,66 +83,66 @@ class WikipediaDashboard {
     getSampleData(title) {
         // Sample articles demonstrating full quality spectrum (0-100)
         const sampleArticles = {
-            // High Quality tier (70-80) - Featured Articles
+            // Featured/Exceptional tier (85-90) - Featured Articles with academic sources
             'Albert Einstein': {
                 title: 'Albert Einstein',
-                maturity_score: 75.6,
+                maturity_score: 89.5,
                 pillar_scores: {
-                    structure: 88.7,
-                    sourcing: 72.2,
-                    editorial: 62.6,
-                    network: 76.0
-                }
-            },
-            'Taylor Swift': {
-                title: 'Taylor Swift',
-                maturity_score: 75.0,
-                pillar_scores: {
-                    structure: 79.9,
-                    sourcing: 75.0,
-                    editorial: 66.9,
-                    network: 76.0
+                    structure: 90.0,
+                    sourcing: 100.0,
+                    editorial: 74.2,
+                    network: 76.7
                 }
             },
             'Coffee': {
                 title: 'Coffee',
-                maturity_score: 74.7,
+                maturity_score: 89.5,
                 pillar_scores: {
-                    structure: 82.5,
-                    sourcing: 75.0,
-                    editorial: 61.8,
-                    network: 76.0
+                    structure: 90.0,
+                    sourcing: 100.0,
+                    editorial: 74.2,
+                    network: 76.7
                 }
             },
             'World War II': {
                 title: 'World War II',
-                maturity_score: 72.8,
+                maturity_score: 89.0,
                 pillar_scores: {
-                    structure: 85.5,
-                    sourcing: 70.3,
-                    editorial: 57.2,
-                    network: 76.0
+                    structure: 90.0,
+                    sourcing: 100.0,
+                    editorial: 71.9,
+                    network: 76.7
                 }
             },
-            // Good tier (65-75) - Good Articles
-            'Micronation': {
-                title: 'Micronation',
-                maturity_score: 71.0,
+            'Zoboomafoo': {
+                title: 'Zoboomafoo',
+                maturity_score: 85.0,
                 pillar_scores: {
-                    structure: 75.3,
-                    sourcing: 75.0,
-                    editorial: 54.0,
-                    network: 76.0
+                    structure: 77.8,
+                    sourcing: 100.0,
+                    editorial: 70.0,
+                    network: 76.7
                 }
             },
+            // High Quality tier (80-85) - Good Articles
             'Python (programming language)': {
                 title: 'Python (programming language)',
-                maturity_score: 70.0,
+                maturity_score: 82.4,
                 pillar_scores: {
-                    structure: 67.2,
+                    structure: 88.8,
+                    sourcing: 77.5,
+                    editorial: 85.2,
+                    network: 76.7
+                }
+            },
+            'Taylor Swift': {
+                title: 'Taylor Swift',
+                maturity_score: 81.8,
+                pillar_scores: {
+                    structure: 90.0,
                     sourcing: 75.0,
-                    editorial: 60.9,
-                    network: 76.0
+                    editorial: 85.6,
+                    network: 76.7
                 }
             },
             // Good/Developing tier (50-74)
@@ -153,16 +153,6 @@ class WikipediaDashboard {
                     structure: 54.0,
                     sourcing: 75.0,
                     editorial: 57.0,
-                    network: 76.0
-                }
-            },
-            'Zoboomafoo': {
-                title: 'Zoboomafoo',
-                maturity_score: 56.4,
-                pillar_scores: {
-                    structure: 58.0,
-                    sourcing: 49.0,
-                    editorial: 59.0,
                     network: 76.0
                 }
             },
