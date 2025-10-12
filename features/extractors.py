@@ -49,7 +49,7 @@ def structure_features(article_data: Dict[str, Any]) -> Dict[str, float]:
 
     # Section depth analysis
     if sections:
-        depths = [section.get("level", 1) for section in sections]
+        depths = [int(str(section.get("level", "1")).strip()) for section in sections]
         features["avg_section_depth"] = float(np.mean(depths))
         features["max_section_depth"] = float(max(depths))
         features["depth_variance"] = float(np.var(depths))
@@ -494,11 +494,16 @@ def _extract_sections(article_data: Dict[str, Any]) -> List[Dict[str, Any]]:
 
     if "parse" in data and "sections" in data["parse"]:
         sections = data["parse"]["sections"]
-    elif "query" in data and "pages" in data["query"]:
-        for page_id, page_data in data["query"]["pages"].items():
-            if "sections" in page_data:
-                sections = page_data["sections"]
-                break
+    elif "query" in data:
+        # Check if sections is directly in query
+        if "sections" in data["query"] and isinstance(data["query"]["sections"], list):
+            sections = data["query"]["sections"]
+        # Otherwise check inside pages
+        elif "pages" in data["query"]:
+            for page_id, page_data in data["query"]["pages"].items():
+                if "sections" in page_data:
+                    sections = page_data["sections"]
+                    break
 
     return sections if isinstance(sections, list) else []
 
@@ -526,11 +531,21 @@ def _extract_templates(article_data: Dict[str, Any]) -> List[Dict[str, Any]]:
 
     data = article_data.get("data", {})
 
-    if "query" in data and "pages" in data["query"]:
-        for page_id, page_data in data["query"]["pages"].items():
-            if "templates" in page_data:
-                templates = page_data["templates"]
-                break
+    if "query" in data:
+        # Check if templates is a separate key in query with page IDs
+        if "templates" in data["query"] and isinstance(
+            data["query"]["templates"], dict
+        ):
+            for page_id, page_data in data["query"]["templates"].items():
+                if "templates" in page_data:
+                    templates = page_data["templates"]
+                    break
+        # Otherwise check inside pages
+        elif "pages" in data["query"]:
+            for page_id, page_data in data["query"]["pages"].items():
+                if "templates" in page_data:
+                    templates = page_data["templates"]
+                    break
 
     return templates if isinstance(templates, list) else []
 
@@ -541,11 +556,19 @@ def _extract_citations(article_data: Dict[str, Any]) -> List[Dict[str, Any]]:
 
     data = article_data.get("data", {})
 
-    if "query" in data and "pages" in data["query"]:
-        for page_id, page_data in data["query"]["pages"].items():
-            if "extlinks" in page_data:
-                citations = page_data["extlinks"]
-                break
+    if "query" in data:
+        # Check if extlinks is a separate key in query with page IDs
+        if "extlinks" in data["query"] and isinstance(data["query"]["extlinks"], dict):
+            for page_id, page_data in data["query"]["extlinks"].items():
+                if "extlinks" in page_data:
+                    citations = page_data["extlinks"]
+                    break
+        # Otherwise check inside pages
+        elif "pages" in data["query"]:
+            for page_id, page_data in data["query"]["pages"].items():
+                if "extlinks" in page_data:
+                    citations = page_data["extlinks"]
+                    break
 
     return citations if isinstance(citations, list) else []
 
@@ -561,11 +584,21 @@ def _extract_revisions(article_data: Dict[str, Any]) -> List[Dict[str, Any]]:
 
     data = article_data.get("data", {})
 
-    if "query" in data and "pages" in data["query"]:
-        for page_id, page_data in data["query"]["pages"].items():
-            if "revisions" in page_data:
-                revisions = page_data["revisions"]
-                break
+    if "query" in data:
+        # Check if revisions is a separate key in query with page IDs
+        if "revisions" in data["query"] and isinstance(
+            data["query"]["revisions"], dict
+        ):
+            for page_id, page_data in data["query"]["revisions"].items():
+                if "revisions" in page_data:
+                    revisions = page_data["revisions"]
+                    break
+        # Otherwise check inside pages
+        elif "pages" in data["query"]:
+            for page_id, page_data in data["query"]["pages"].items():
+                if "revisions" in page_data:
+                    revisions = page_data["revisions"]
+                    break
 
     return revisions if isinstance(revisions, list) else []
 

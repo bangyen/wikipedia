@@ -70,16 +70,13 @@ class WikipediaDashboard {
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
-            return await response.json();
+            const data = await response.json();
+            console.log(`Fetched real data for: ${title}`, data);
+            return data;
         } catch (error) {
             console.error('API error:', error);
-            // Fallback to sample data
-            const sampleData = this.getSampleData(title);
-            if (sampleData) {
-                return sampleData;
-            }
-            // Generate mock data as last resort
-            return this.generateMockData(title);
+            this.showError(`Failed to fetch article "${title}". Please check the article title.`);
+            throw error;
         }
     }
 
@@ -87,52 +84,52 @@ class WikipediaDashboard {
         const sampleArticles = {
             'Albert Einstein': {
                 title: 'Albert Einstein',
-                maturity_score: 5.17,
+                maturity_score: 82.5,
                 pillar_scores: {
-                    structure: 0.73,
-                    sourcing: 0.0,
-                    editorial: 0.0,
-                    network: 49.5
+                    structure: 85.3,
+                    sourcing: 88.7,
+                    editorial: 76.2,
+                    network: 79.4
                 }
             },
             'Python (programming language)': {
                 title: 'Python (programming language)',
-                maturity_score: 5.01,
+                maturity_score: 78.2,
                 pillar_scores: {
-                    structure: 0.2,
-                    sourcing: 0.0,
-                    editorial: 0.0,
-                    network: 49.5
+                    structure: 82.1,
+                    sourcing: 75.6,
+                    editorial: 81.3,
+                    network: 73.8
                 }
             },
             'Wikipedia': {
                 title: 'Wikipedia',
-                maturity_score: 5.06,
+                maturity_score: 79.8,
                 pillar_scores: {
-                    structure: 0.35,
-                    sourcing: 0.0,
-                    editorial: 0.0,
-                    network: 49.5
+                    structure: 78.5,
+                    sourcing: 84.2,
+                    editorial: 74.6,
+                    network: 81.9
                 }
             },
             'Stub': {
                 title: 'Stub',
-                maturity_score: 4.72,
+                maturity_score: 45.3,
                 pillar_scores: {
-                    structure: 0.01,
-                    sourcing: 0.0,
-                    editorial: 0.0,
-                    network: 47.2
+                    structure: 38.2,
+                    sourcing: 42.1,
+                    editorial: 51.7,
+                    network: 48.9
                 }
             },
             'List of colors': {
                 title: 'List of colors',
-                maturity_score: 3.45,
+                maturity_score: 52.7,
                 pillar_scores: {
-                    structure: 0.0,
-                    sourcing: 0.0,
-                    editorial: 0.0,
-                    network: 34.5
+                    structure: 61.3,
+                    sourcing: 35.8,
+                    editorial: 48.2,
+                    network: 67.5
                 }
             }
         };
@@ -141,12 +138,12 @@ class WikipediaDashboard {
     }
 
     generateMockData(title) {
-        // Generate realistic mock data
-        const baseScore = Math.random() * 10 + 2;
-        const structure = Math.random() * 20;
-        const sourcing = Math.random() * 15;
-        const editorial = Math.random() * 25;
-        const network = Math.random() * 50 + 20;
+        // Generate realistic mock data on 0-100 scale
+        const baseScore = Math.random() * 60 + 30; // 30-90 range
+        const structure = Math.random() * 60 + 20; // 20-80
+        const sourcing = Math.random() * 60 + 20; // 20-80
+        const editorial = Math.random() * 60 + 20; // 20-80
+        const network = Math.random() * 60 + 20; // 20-80
         
         return {
             title: title,
@@ -188,8 +185,8 @@ class WikipediaDashboard {
         const scoreCircle = document.querySelector('.score-circle');
         let colorClass = 'score-low';
         
-        if (score >= 7) colorClass = 'score-high';
-        else if (score >= 4) colorClass = 'score-medium';
+        if (score >= 70) colorClass = 'score-high';
+        else if (score >= 50) colorClass = 'score-medium';
         
         scoreCircle.className = `score-circle ${colorClass}`;
     }
@@ -234,9 +231,9 @@ class WikipediaDashboard {
                 scales: {
                     r: {
                         beginAtZero: true,
-                        max: 50,
+                        max: 100,
                         ticks: {
-                            stepSize: 10,
+                            stepSize: 20,
                             font: {
                                 family: 'Space Grotesk',
                                 size: 12
@@ -342,8 +339,8 @@ class WikipediaDashboard {
     }
 
     getScoreClass(score) {
-        if (score >= 7) return 'score-high';
-        if (score >= 4) return 'score-medium';
+        if (score >= 70) return 'score-high';
+        if (score >= 50) return 'score-medium';
         return 'score-low';
     }
 

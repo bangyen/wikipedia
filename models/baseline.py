@@ -319,10 +319,11 @@ class HeuristicBaselineModel:
 
         # Scale to 0-100 range
         maturity_score = maturity_score * 100
+        scaled_pillar_scores = {k: round(v * 100, 2) for k, v in pillar_scores.items()}
 
         return {
             "maturity_score": round(maturity_score, 2),
-            "pillar_scores": {k: round(v * 100, 2) for k, v in pillar_scores.items()},
+            "pillar_scores": scaled_pillar_scores,
             "raw_features": raw_features,
             "normalized_features": normalized_features,
             "weights_used": {
