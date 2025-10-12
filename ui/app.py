@@ -141,9 +141,9 @@ def fetch_article_data(title: str) -> Optional[Dict[str, Any]]:
         page_content = wiki_client.get_page_content(title)
         sections = wiki_client.get_sections(title)
         templates = wiki_client.get_templates(title)
-        revisions = wiki_client.get_revisions(title, rvlimit=20)
-        backlinks = wiki_client.get_backlinks(title, bllimit=50)
-        citations = wiki_client.get_citations(title, ellimit=50)
+        revisions = wiki_client.get_revisions(title, rvlimit=100)
+        backlinks = wiki_client.get_backlinks(title, bllimit=100)
+        citations = wiki_client.get_citations(title, ellimit=100)
 
         # Combine data
         article_data = {
