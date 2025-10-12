@@ -422,6 +422,46 @@ class WikiClient:
 
         return result  # type: ignore
 
+    def get_links(
+        self,
+        title: str,
+        format: str = "json",
+        action: str = "query",
+        prop: str = "links",
+        pllimit: int = 100,
+    ) -> Dict[str, Any]:
+        """Fetch internal links from a Wikipedia page.
+
+        Args:
+            title: Page title to fetch links for
+            format: Response format (default: json)
+            action: API action (default: query)
+            prop: Properties to fetch (default: links)
+            pllimit: Number of links to fetch (default: 100)
+
+        Returns:
+            Dictionary containing internal links and metadata
+        """
+        cache_key = self._get_cache_key("links", title=title, pllimit=pllimit)
+
+        params = {
+            "format": format,
+            "action": action,
+            "titles": title,
+            "prop": prop,
+            "pllimit": pllimit,
+        }
+
+        response = self._make_request(self.base_url, params, cache_key)
+
+        result = {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "title": title,
+            "data": response,
+        }
+
+        return result  # type: ignore
+
     def clear_cache(self) -> None:
         """Clear the response cache."""
         self._cache.clear()
