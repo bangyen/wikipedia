@@ -142,35 +142,32 @@ class HeuristicBaselineModel:
         normalized = {}
 
         # Define normalization ranges for key features
-        # Calibrated so Featured Articles score 85-95, Good Articles 75-85
-        # Values set where maxing out API limits = Featured Article quality
+        # Calibrated aggressively so Featured Articles score 90-95+
+        # Lower thresholds + bonus system = Featured Articles in top tier
         normalization_ranges = {
             # Structure features
-            "section_count": (0, 45),  # 45+ sections = Featured quality
-            "content_length": (
-                0,
-                3500,
-            ),  # 3.5k+ chars = comprehensive (we only get extract)
-            "template_count": (0, 15),  # 15+ templates = excellent formatting
-            "avg_section_depth": (1, 3.5),  # Depth 3+ = mature structure
-            "sections_per_1k_chars": (0, 12),
+            "section_count": (0, 40),  # 40+ sections = Featured quality
+            "content_length": (0, 3000),  # 3k+ chars = comprehensive
+            "template_count": (0, 12),  # 12+ templates = excellent
+            "avg_section_depth": (1, 3.2),  # Depth 3+ = mature structure
+            "sections_per_1k_chars": (0, 10),
             # Sourcing features (Featured articles max out 100 limit)
-            "citation_count": (0, 60),  # 60+ = Featured (maxing 100 = way beyond)
-            "citations_per_1k_tokens": (0, 60),  # 60+ = exceptional density
-            "external_link_count": (0, 60),  # 60+ = comprehensive sourcing
-            "citation_density": (0, 0.04),
-            "academic_source_ratio": (0, 0.4),  # 40%+ academic = Featured quality
-            # Editorial features (Featured articles have extensive edit history)
-            "total_editors": (1, 30),  # 30+ editors = highly collaborative
-            "total_revisions": (1, 60),  # 60+ in sample = very active
-            "editor_diversity": (0, 0.8),  # High diversity normalized to 0.8 as max
-            "recent_activity_score": (0, 8),
-            "major_editor_ratio": (0, 0.8),
-            # Network features (Featured articles are highly connected)
-            "inbound_links": (0, 60),  # 60+ backlinks = Featured quality
-            "outbound_links": (0, 110),  # 110+ outbound = comprehensive linking
+            "citation_count": (0, 50),  # 50+ = Featured (hitting 100 = exceptional)
+            "citations_per_1k_tokens": (0, 50),  # 50+ = exceptional density
+            "external_link_count": (0, 50),  # 50+ = comprehensive
+            "citation_density": (0, 0.035),
+            "academic_source_ratio": (0, 0.35),  # 35%+ academic = Featured
+            # Editorial features
+            "total_editors": (1, 25),  # 25+ editors = Featured quality
+            "total_revisions": (1, 50),  # 50+ in sample = Featured
+            "editor_diversity": (0, 0.7),
+            "recent_activity_score": (0, 7),
+            "major_editor_ratio": (0, 0.7),
+            # Network features
+            "inbound_links": (0, 50),  # 50+ backlinks = Featured
+            "outbound_links": (0, 100),  # 100+ outbound = comprehensive
             "connectivity_score": (0, 1),
-            "link_density": (0, 0.015),
+            "link_density": (0, 0.012),
             "authority_score": (0, 1),
         }
 
@@ -340,18 +337,23 @@ class HeuristicBaselineModel:
             good_pillars = sum(1 for score in pillar_values if score >= 0.60)
 
             # Aggressive bonus for comprehensive excellence
-            if excellent_pillars >= 3:
-                # 3+ pillars at 70%+ = Featured Article quality
-                # 20% bonus for comprehensive excellence
-                maturity_score = min(1.0, maturity_score * 1.20)
+            # Featured Articles should score 90-95+
+            if excellent_pillars >= 4:
+                # ALL 4 pillars at 70%+ = Top Featured Article
+                # 30% bonus for exceptional comprehensive quality
+                maturity_score = min(1.0, maturity_score * 1.30)
+            elif excellent_pillars >= 3:
+                # 3 pillars at 70%+ = Featured Article quality
+                # 25% bonus for comprehensive excellence
+                maturity_score = min(1.0, maturity_score * 1.25)
             elif good_pillars >= 4:
                 # All 4 pillars at 60%+ = Good Article quality
-                # 15% bonus for balanced quality
-                maturity_score = min(1.0, maturity_score * 1.15)
+                # 18% bonus for balanced quality
+                maturity_score = min(1.0, maturity_score * 1.18)
             elif good_pillars >= 3:
                 # 3 solid pillars = quality article
-                # 10% bonus
-                maturity_score = min(1.0, maturity_score * 1.10)
+                # 12% bonus
+                maturity_score = min(1.0, maturity_score * 1.12)
 
         # Scale to 0-100 range
         maturity_score = maturity_score * 100
