@@ -192,7 +192,8 @@ PEER_GROUPS = {
         "Dense set",  # 82.5
         # Developing tier (76)
         "Tietze extension theorem",  # 76.2
-        # ** GAP: 60-75 range - need articles here **
+        # Mid-range (60-75) - moderate quality
+        "Artin–Mazur zeta function",  # 65.0
         # Stubs (50-59) - short articles with stub penalty
         "Alexander Bittner",  # 53.6
         "Zimmert set",  # 49.7

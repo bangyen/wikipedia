@@ -156,6 +156,17 @@ class WikipediaDashboard {
                     network: 76.0
                 }
             },
+            // Mid-range (60-75) - Moderate quality
+            'Artin–Mazur zeta function': {
+                title: 'Artin–Mazur zeta function',
+                maturity_score: 65.0,
+                pillar_scores: {
+                    structure: 60.0,
+                    sourcing: 70.0,
+                    editorial: 65.0,
+                    network: 65.0
+                }
+            },
             // Developing tier (50-59) - Stubs with penalty
             'Alexander Bittner': {
                 title: 'Alexander Bittner',
