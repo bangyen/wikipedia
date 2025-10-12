@@ -335,6 +335,26 @@ class HeuristicBaselineModel:
         if total_weight > 0:
             maturity_score = maturity_score / total_weight
 
+        # Apply stub penalty to prevent gaming density metrics
+        # Rationale: Articles with minimal content can have artificially high
+        # density metrics (citations per token, link density) despite poor quality
+        content_length = raw_features.get("content_length", 0)
+        section_count = raw_features.get("section_count", 0)
+
+        stub_penalty = 1.0  # No penalty by default
+
+        if content_length < 500 and section_count < 4:
+            # Severe stub: very short content + minimal structure
+            stub_penalty = 0.55
+        elif content_length < 1000 and section_count < 6:
+            # Developing stub: short content + limited structure
+            stub_penalty = 0.75
+        elif content_length < 2000 and section_count < 8:
+            # Minor stub: somewhat short content
+            stub_penalty = 0.90
+
+        maturity_score = maturity_score * stub_penalty
+
         # Scale to 0-100 range
         maturity_score = maturity_score * 100
         scaled_pillar_scores = {k: round(v * 100, 2) for k, v in pillar_scores.items()}
