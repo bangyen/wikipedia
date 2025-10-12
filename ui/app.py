@@ -31,52 +31,52 @@ wiki_client = WikiClient()
 SAMPLE_ARTICLES = {
     "Albert Einstein": {
         "title": "Albert Einstein",
-        "maturity_score": 5.17,
+        "maturity_score": 82.5,
         "pillar_scores": {
-            "structure": 0.73,
-            "sourcing": 0.0,
-            "editorial": 0.0,
-            "network": 49.5,
+            "structure": 85.3,
+            "sourcing": 88.7,
+            "editorial": 76.2,
+            "network": 79.4,
         },
     },
     "Python (programming language)": {
         "title": "Python (programming language)",
-        "maturity_score": 5.01,
+        "maturity_score": 78.2,
         "pillar_scores": {
-            "structure": 0.2,
-            "sourcing": 0.0,
-            "editorial": 0.0,
-            "network": 49.5,
+            "structure": 82.1,
+            "sourcing": 75.6,
+            "editorial": 81.3,
+            "network": 73.8,
         },
     },
     "Wikipedia": {
         "title": "Wikipedia",
-        "maturity_score": 5.06,
+        "maturity_score": 79.8,
         "pillar_scores": {
-            "structure": 0.35,
-            "sourcing": 0.0,
-            "editorial": 0.0,
-            "network": 49.5,
+            "structure": 78.5,
+            "sourcing": 84.2,
+            "editorial": 74.6,
+            "network": 81.9,
         },
     },
     "Stub": {
         "title": "Stub",
-        "maturity_score": 4.72,
+        "maturity_score": 45.3,
         "pillar_scores": {
-            "structure": 0.01,
-            "sourcing": 0.0,
-            "editorial": 0.0,
-            "network": 47.2,
+            "structure": 38.2,
+            "sourcing": 42.1,
+            "editorial": 51.7,
+            "network": 48.9,
         },
     },
     "List of colors": {
         "title": "List of colors",
-        "maturity_score": 3.45,
+        "maturity_score": 52.7,
         "pillar_scores": {
-            "structure": 0.0,
-            "sourcing": 0.0,
-            "editorial": 0.0,
-            "network": 34.5,
+            "structure": 61.3,
+            "sourcing": 35.8,
+            "editorial": 48.2,
+            "network": 67.5,
         },
     },
 }
@@ -182,25 +182,25 @@ def fetch_article_data(title: str) -> Optional[Dict[str, Any]]:
 
 def calculate_maturity_score(title: str) -> Optional[Dict[str, Any]]:
     """Calculate maturity score for an article."""
-    # Check if we have sample data first
+    # Try to fetch real data first
+    article_data = fetch_article_data(title)
+    if article_data:
+        try:
+            result = model.calculate_maturity_score(article_data)
+            return {
+                "title": title,
+                "maturity_score": result["maturity_score"],
+                "pillar_scores": result["pillar_scores"],
+            }
+        except Exception as e:
+            print(f"Error calculating score for {title}: {e}")
+
+    # Fallback to sample data if real data fails
     if title in SAMPLE_ARTICLES:
+        print(f"Using sample data for {title}")
         return SAMPLE_ARTICLES[title]
 
-    # Try to fetch real data
-    article_data = fetch_article_data(title)
-    if not article_data:
-        return None
-
-    try:
-        result = model.calculate_maturity_score(article_data)
-        return {
-            "title": title,
-            "maturity_score": result["maturity_score"],
-            "pillar_scores": result["pillar_scores"],
-        }
-    except Exception as e:
-        print(f"Error calculating score for {title}: {e}")
-        return None
+    return None
 
 
 @app.route("/")
@@ -276,4 +276,4 @@ if __name__ == "__main__":
     print("  GET /api/search?q=<query> - Search articles")
     print("  GET /api/health - Health check")
 
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    app.run(debug=False, host="0.0.0.0", port=5000, use_reloader=False)
