@@ -142,29 +142,33 @@ class HeuristicBaselineModel:
         normalized = {}
 
         # Define normalization ranges for key features
-        # Adjusted to match our API fetch limits (100 revisions, 100 citations, 100 backlinks)
+        # Optimized for Featured/Good article detection
+        # Conservative ranges: reaching 80%+ indicates excellent quality
         normalization_ranges = {
             # Structure features
-            "section_count": (0, 80),  # Major articles have 50-100+ sections
-            "content_length": (0, 50000),  # Adjusted for typical article length
-            "template_count": (0, 40),  # Good articles have many templates
-            "avg_section_depth": (1, 4),  # Most articles use depth 2-3
+            "section_count": (
+                0,
+                55,
+            ),  # 55+ sections = excellent (featured articles have 50-100+)
+            "content_length": (0, 4500),  # Extract only, 4.5k+ = comprehensive
+            "template_count": (0, 20),  # 20+ templates = well-formatted
+            "avg_section_depth": (1, 4),  # Depth 3-4 = good organization
             "sections_per_1k_chars": (0, 15),
-            # Sourcing features (we fetch max 100)
-            "citation_count": (0, 100),  # We fetch 100 max
-            "citations_per_1k_tokens": (0, 100),
-            "external_link_count": (0, 100),  # We fetch 100 max
+            # Sourcing features (fetch limit 100)
+            "citation_count": (0, 70),  # 70+ = excellent sourcing
+            "citations_per_1k_tokens": (0, 70),  # 70+ per 1k = very well sourced
+            "external_link_count": (0, 70),  # 70+ external links = comprehensive
             "citation_density": (0, 0.05),
-            "academic_source_ratio": (0, 1),
-            # Editorial features (we fetch max 100 revisions)
-            "total_editors": (1, 50),  # Up to 50 unique editors in 100 revisions
-            "total_revisions": (1, 100),  # We fetch 100 revisions
+            "academic_source_ratio": (0, 0.5),  # 50%+ academic = exceptional
+            # Editorial features (fetch limit 100)
+            "total_editors": (1, 35),  # 35+ editors = highly collaborative
+            "total_revisions": (1, 70),  # 70+ revisions in sample = very active
             "editor_diversity": (0, 1),
             "recent_activity_score": (0, 10),
             "major_editor_ratio": (0, 1),
-            # Network features (we fetch max 100 backlinks)
-            "inbound_links": (0, 100),  # We fetch 100 max
-            "outbound_links": (0, 200),
+            # Network features (fetch limit 100/200)
+            "inbound_links": (0, 70),  # 70+ backlinks = highly connected
+            "outbound_links": (0, 130),  # 130+ outbound = comprehensive
             "connectivity_score": (0, 1),
             "link_density": (0, 0.02),
             "authority_score": (0, 1),
@@ -174,9 +178,17 @@ class HeuristicBaselineModel:
             if feature_name in normalization_ranges:
                 min_val, max_val = normalization_ranges[feature_name]
                 if max_val > min_val:
-                    normalized[feature_name] = max(
-                        0, min(1, (value - min_val) / (max_val - min_val))
-                    )
+                    norm_value = (value - min_val) / (max_val - min_val)
+                    # Give bonus credit for exceeding expected ranges (hitting API limits)
+                    # Articles that max out are likely even better than we can measure
+                    if norm_value >= 1.0:  # Maxed out
+                        norm_value = 1.0  # Full credit
+                    elif norm_value > 0.8:  # Near max (80%+)
+                        # Boost high performers with a curve
+                        norm_value = (
+                            0.8 + (norm_value - 0.8) * 1.25
+                        )  # 25% boost in top range
+                    normalized[feature_name] = max(0, min(1, norm_value))
                 else:
                     normalized[feature_name] = 0.0
             else:

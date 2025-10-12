@@ -628,11 +628,19 @@ def _extract_internal_links(article_data: Dict[str, Any]) -> List[Dict[str, Any]
 
     data = article_data.get("data", {})
 
-    if "query" in data and "pages" in data["query"]:
-        for page_id, page_data in data["query"]["pages"].items():
-            if "links" in page_data:
-                internal_links = page_data["links"]
-                break
+    if "query" in data:
+        # Check if links is a separate key in query with page IDs
+        if "links" in data["query"] and isinstance(data["query"]["links"], dict):
+            for page_id, page_data in data["query"]["links"].items():
+                if "links" in page_data:
+                    internal_links = page_data["links"]
+                    break
+        # Otherwise check inside pages
+        elif "pages" in data["query"]:
+            for page_id, page_data in data["query"]["pages"].items():
+                if "links" in page_data:
+                    internal_links = page_data["links"]
+                    break
 
     return internal_links if isinstance(internal_links, list) else []
 

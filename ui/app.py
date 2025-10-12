@@ -144,6 +144,7 @@ def fetch_article_data(title: str) -> Optional[Dict[str, Any]]:
         revisions = wiki_client.get_revisions(title, rvlimit=100)
         backlinks = wiki_client.get_backlinks(title, bllimit=100)
         citations = wiki_client.get_citations(title, ellimit=100)
+        links = wiki_client.get_links(title, pllimit=200)
 
         # Combine data
         article_data = {
@@ -169,6 +170,7 @@ def fetch_article_data(title: str) -> Optional[Dict[str, Any]]:
                     "extlinks": citations.get("data", {})
                     .get("query", {})
                     .get("pages", {}),
+                    "links": links.get("data", {}).get("query", {}).get("pages", {}),
                 },
             },
         }
