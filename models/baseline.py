@@ -142,35 +142,35 @@ class HeuristicBaselineModel:
         normalized = {}
 
         # Define normalization ranges for key features
-        # Optimized for Featured/Good article detection
-        # Conservative ranges: reaching 80%+ indicates excellent quality
+        # Calibrated so Featured Articles score 85-95, Good Articles 75-85
+        # Values set where maxing out API limits = Featured Article quality
         normalization_ranges = {
             # Structure features
-            "section_count": (
+            "section_count": (0, 45),  # 45+ sections = Featured quality
+            "content_length": (
                 0,
-                55,
-            ),  # 55+ sections = excellent (featured articles have 50-100+)
-            "content_length": (0, 4500),  # Extract only, 4.5k+ = comprehensive
-            "template_count": (0, 20),  # 20+ templates = well-formatted
-            "avg_section_depth": (1, 4),  # Depth 3-4 = good organization
-            "sections_per_1k_chars": (0, 15),
-            # Sourcing features (fetch limit 100)
-            "citation_count": (0, 70),  # 70+ = excellent sourcing
-            "citations_per_1k_tokens": (0, 70),  # 70+ per 1k = very well sourced
-            "external_link_count": (0, 70),  # 70+ external links = comprehensive
-            "citation_density": (0, 0.05),
-            "academic_source_ratio": (0, 0.5),  # 50%+ academic = exceptional
-            # Editorial features (fetch limit 100)
-            "total_editors": (1, 35),  # 35+ editors = highly collaborative
-            "total_revisions": (1, 70),  # 70+ revisions in sample = very active
-            "editor_diversity": (0, 1),
-            "recent_activity_score": (0, 10),
-            "major_editor_ratio": (0, 1),
-            # Network features (fetch limit 100/200)
-            "inbound_links": (0, 70),  # 70+ backlinks = highly connected
-            "outbound_links": (0, 130),  # 130+ outbound = comprehensive
+                3500,
+            ),  # 3.5k+ chars = comprehensive (we only get extract)
+            "template_count": (0, 15),  # 15+ templates = excellent formatting
+            "avg_section_depth": (1, 3.5),  # Depth 3+ = mature structure
+            "sections_per_1k_chars": (0, 12),
+            # Sourcing features (Featured articles max out 100 limit)
+            "citation_count": (0, 60),  # 60+ = Featured (maxing 100 = way beyond)
+            "citations_per_1k_tokens": (0, 60),  # 60+ = exceptional density
+            "external_link_count": (0, 60),  # 60+ = comprehensive sourcing
+            "citation_density": (0, 0.04),
+            "academic_source_ratio": (0, 0.4),  # 40%+ academic = Featured quality
+            # Editorial features (Featured articles have extensive edit history)
+            "total_editors": (1, 30),  # 30+ editors = highly collaborative
+            "total_revisions": (1, 60),  # 60+ in sample = very active
+            "editor_diversity": (0, 0.8),  # High diversity normalized to 0.8 as max
+            "recent_activity_score": (0, 8),
+            "major_editor_ratio": (0, 0.8),
+            # Network features (Featured articles are highly connected)
+            "inbound_links": (0, 60),  # 60+ backlinks = Featured quality
+            "outbound_links": (0, 110),  # 110+ outbound = comprehensive linking
             "connectivity_score": (0, 1),
-            "link_density": (0, 0.02),
+            "link_density": (0, 0.015),
             "authority_score": (0, 1),
         }
 
@@ -179,15 +179,16 @@ class HeuristicBaselineModel:
                 min_val, max_val = normalization_ranges[feature_name]
                 if max_val > min_val:
                     norm_value = (value - min_val) / (max_val - min_val)
-                    # Give bonus credit for exceeding expected ranges (hitting API limits)
-                    # Articles that max out are likely even better than we can measure
-                    if norm_value >= 1.0:  # Maxed out
+                    # Aggressive boosting for high-quality articles
+                    # Featured articles often max out our API limits
+                    if norm_value >= 1.0:  # Maxed out = Featured Article quality
                         norm_value = 1.0  # Full credit
-                    elif norm_value > 0.8:  # Near max (80%+)
-                        # Boost high performers with a curve
-                        norm_value = (
-                            0.8 + (norm_value - 0.8) * 1.25
-                        )  # 25% boost in top range
+                    elif norm_value >= 0.9:  # 90%+ = Excellent, near Featured
+                        # Strong boost for top performers
+                        norm_value = 0.9 + (norm_value - 0.9) * 1.5  # 50% boost
+                    elif norm_value >= 0.7:  # 70%+ = Good article range
+                        # Moderate boost for good performers
+                        norm_value = 0.7 + (norm_value - 0.7) * 1.3  # 30% boost
                     normalized[feature_name] = max(0, min(1, norm_value))
                 else:
                     normalized[feature_name] = 0.0
@@ -329,6 +330,28 @@ class HeuristicBaselineModel:
 
         if total_weight > 0:
             maturity_score = maturity_score / total_weight
+
+        # Comprehensive Quality Bonus - rewards Featured Article characteristics
+        # Featured Articles excel across ALL dimensions, not just one or two
+        pillar_values = list(pillar_scores.values())
+        if len(pillar_values) >= 3:
+            # Count high-performing pillars
+            excellent_pillars = sum(1 for score in pillar_values if score >= 0.70)
+            good_pillars = sum(1 for score in pillar_values if score >= 0.60)
+
+            # Aggressive bonus for comprehensive excellence
+            if excellent_pillars >= 3:
+                # 3+ pillars at 70%+ = Featured Article quality
+                # 20% bonus for comprehensive excellence
+                maturity_score = min(1.0, maturity_score * 1.20)
+            elif good_pillars >= 4:
+                # All 4 pillars at 60%+ = Good Article quality
+                # 15% bonus for balanced quality
+                maturity_score = min(1.0, maturity_score * 1.15)
+            elif good_pillars >= 3:
+                # 3 solid pillars = quality article
+                # 10% bonus
+                maturity_score = min(1.0, maturity_score * 1.10)
 
         # Scale to 0-100 range
         maturity_score = maturity_score * 100
