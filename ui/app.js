@@ -83,34 +83,34 @@ class WikipediaDashboard {
     getSampleData(title) {
         // Sample articles demonstrating full quality spectrum (0-100)
         const sampleArticles = {
-            // Featured/Exceptional tier (85-90) - Featured Articles with academic sources
+            // Featured/Exceptional tier (90-93) - Featured Articles with academic sources & recent activity
             'Albert Einstein': {
                 title: 'Albert Einstein',
-                maturity_score: 89.5,
+                maturity_score: 92.5,
                 pillar_scores: {
                     structure: 90.0,
                     sourcing: 100.0,
-                    editorial: 74.2,
+                    editorial: 89.2,
                     network: 76.7
                 }
             },
             'Coffee': {
                 title: 'Coffee',
-                maturity_score: 89.5,
+                maturity_score: 92.5,
                 pillar_scores: {
                     structure: 90.0,
                     sourcing: 100.0,
-                    editorial: 74.2,
+                    editorial: 89.2,
                     network: 76.7
                 }
             },
             'World War II': {
                 title: 'World War II',
-                maturity_score: 89.0,
+                maturity_score: 92.0,
                 pillar_scores: {
                     structure: 90.0,
                     sourcing: 100.0,
-                    editorial: 71.9,
+                    editorial: 86.9,
                     network: 76.7
                 }
             },
