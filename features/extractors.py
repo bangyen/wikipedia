@@ -163,8 +163,27 @@ def sourcing_features(article_data: Dict[str, Any]) -> Dict[str, float]:
     org_count = 0
 
     for link in external_links:
-        url = link.get("url", "").lower()
-        if any(domain in url for domain in [".edu", ".ac.", "scholar", "researchgate"]):
+        # External links use "*" as the key in Wikipedia API
+        url = link.get("*", link.get("url", "")).lower()
+        # Academic sources - include DOI, scholarly databases, academic institutions
+        if any(
+            domain in url
+            for domain in [
+                "doi.org",  # Digital Object Identifiers (academic papers)
+                ".edu",  # Educational institutions
+                ".ac.",  # Academic institutions (ac.uk, ac.jp, etc.)
+                "arxiv",  # arXiv preprints
+                "jstor",  # JSTOR
+                "pubmed",  # PubMed
+                "scholar",  # Google Scholar
+                "sciencedirect",  # ScienceDirect
+                "springer",  # Springer
+                "wiley",  # Wiley
+                "nature.com",  # Nature
+                "science.org",  # Science
+                "researchgate",  # ResearchGate
+            ]
+        ):
             academic_count += 1
         elif any(
             domain in url for domain in [".com/news", "bbc", "cnn", "reuters", "ap.org"]
