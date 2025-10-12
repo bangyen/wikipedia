@@ -27,111 +27,135 @@ CORS(app)
 model = HeuristicBaselineModel()
 wiki_client = WikiClient()
 
-# Sample data for demo purposes
+# Sample articles demonstrating full quality spectrum (0-100)
 SAMPLE_ARTICLES = {
+    # Featured/Exceptional tier (90-100) - Featured Articles
     "Albert Einstein": {
         "title": "Albert Einstein",
-        "maturity_score": 82.5,
+        "maturity_score": 94.5,
         "pillar_scores": {
-            "structure": 85.3,
-            "sourcing": 88.7,
-            "editorial": 76.2,
-            "network": 79.4,
+            "structure": 89.0,
+            "sourcing": 72.0,
+            "editorial": 63.0,
+            "network": 76.0,
+        },
+    },
+    "Taylor Swift": {
+        "title": "Taylor Swift",
+        "maturity_score": 93.7,
+        "pillar_scores": {
+            "structure": 80.0,
+            "sourcing": 75.0,
+            "editorial": 67.0,
+            "network": 76.0,
+        },
+    },
+    "Coffee": {
+        "title": "Coffee",
+        "maturity_score": 93.4,
+        "pillar_scores": {
+            "structure": 82.0,
+            "sourcing": 75.0,
+            "editorial": 62.0,
+            "network": 76.0,
+        },
+    },
+    "World War II": {
+        "title": "World War II",
+        "maturity_score": 91.0,
+        "pillar_scores": {
+            "structure": 86.0,
+            "sourcing": 70.0,
+            "editorial": 57.0,
+            "network": 76.0,
+        },
+    },
+    # High Quality tier (75-89) - Good Articles
+    "Micronation": {
+        "title": "Micronation",
+        "maturity_score": 88.8,
+        "pillar_scores": {
+            "structure": 75.0,
+            "sourcing": 75.0,
+            "editorial": 54.0,
+            "network": 76.0,
         },
     },
     "Python (programming language)": {
         "title": "Python (programming language)",
-        "maturity_score": 78.2,
+        "maturity_score": 82.5,
         "pillar_scores": {
-            "structure": 82.1,
-            "sourcing": 75.6,
-            "editorial": 81.3,
-            "network": 73.8,
+            "structure": 67.0,
+            "sourcing": 75.0,
+            "editorial": 61.0,
+            "network": 76.0,
         },
     },
-    "Wikipedia": {
-        "title": "Wikipedia",
-        "maturity_score": 79.8,
+    # Good/Developing tier (50-74) - Start-class
+    "Banana slug": {
+        "title": "Banana slug",
+        "maturity_score": 65.2,
         "pillar_scores": {
-            "structure": 78.5,
-            "sourcing": 84.2,
-            "editorial": 74.6,
-            "network": 81.9,
+            "structure": 54.0,
+            "sourcing": 75.0,
+            "editorial": 57.0,
+            "network": 76.0,
         },
     },
-    "Stub": {
-        "title": "Stub",
-        "maturity_score": 45.3,
+    "Zoboomafoo": {
+        "title": "Zoboomafoo",
+        "maturity_score": 56.4,
         "pillar_scores": {
-            "structure": 38.2,
-            "sourcing": 42.1,
-            "editorial": 51.7,
-            "network": 48.9,
+            "structure": 58.0,
+            "sourcing": 49.0,
+            "editorial": 59.0,
+            "network": 76.0,
         },
     },
-    "List of colors": {
-        "title": "List of colors",
-        "maturity_score": 52.7,
+    # Stub tier (0-49) - Minimal content
+    "List of colours": {
+        "title": "List of colours",
+        "maturity_score": 9.8,
         "pillar_scores": {
-            "structure": 61.3,
-            "sourcing": 35.8,
-            "editorial": 48.2,
-            "network": 67.5,
+            "structure": 9.0,
+            "sourcing": 0.0,
+            "editorial": 22.0,
+            "network": 28.0,
         },
     },
 }
 
-# Peer groups for comparison
+# Peer groups for comparison - showing full quality spectrum (0-100)
 PEER_GROUPS = {
-    "science": [
-        "Albert Einstein",
-        "Machine Learning",
-        "Artificial Intelligence",
-        "Computer Science",
-        "Physics",
-        "Mathematics",
-        "Chemistry",
-        "Biology",
+    "featured": [
+        "Albert Einstein",  # 94.5 - Featured
+        "Taylor Swift",  # 93.7 - Featured
+        "Coffee",  # 93.4 - Featured
+        "World War II",  # 91.0 - Featured
     ],
-    "technology": [
-        "Python (programming language)",
-        "JavaScript",
-        "Java (programming language)",
-        "C++",
-        "Computer Science",
-        "Software Engineering",
-        "Web Development",
-        "Data Science",
+    "mixed_quality": [
+        "Albert Einstein",  # 94.5 - Featured
+        "Micronation",  # 88.8 - High Quality
+        "Python (programming language)",  # 82.5 - High Quality
+        "Banana slug",  # 65.2 - Developing
+        "Zoboomafoo",  # 56.4 - Start
+        "List of colours",  # 9.8 - Stub
     ],
-    "general": [
-        "Wikipedia",
-        "Internet",
-        "World Wide Web",
-        "Information",
-        "Knowledge",
-        "Education",
-        "Research",
-        "Communication",
+    "developing": [
+        "Banana slug",  # 65.2 - Developing
+        "Zoboomafoo",  # 56.4 - Start
+        "List of colours",  # 9.8 - Stub
     ],
 }
 
 
 def get_peer_group(title: str) -> List[str]:
-    """Determine peer group for an article based on title."""
-    title_lower = title.lower()
+    """Determine peer group for an article based on title.
 
-    if any(
-        keyword in title_lower
-        for keyword in ["einstein", "physics", "science", "mathematics"]
-    ):
-        return PEER_GROUPS["science"]
-    elif any(
-        keyword in title_lower
-        for keyword in ["python", "programming", "computer", "software", "technology"]
-    ):
-        return PEER_GROUPS["technology"]
-    else:
-        return PEER_GROUPS["general"]
+    Returns mixed_quality by default to show full spectrum (9.8 - 94.5).
+    """
+    # Always return mixed_quality to showcase the full scoring range
+    return PEER_GROUPS["mixed_quality"]
 
 
 def fetch_article_data(title: str) -> Optional[Dict[str, Any]]:
