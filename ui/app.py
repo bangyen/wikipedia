@@ -184,7 +184,7 @@ PEER_GROUPS = {
         "World War II",  # 95.0 - Featured Article
     ],
     "mixed_quality": [
-        # Simplified to 8 articles with clear score separation (95.5 → 3.0)
+        # 7 proper encyclopedic articles with clear score separation (33.3 → 95.5)
         "Albert Einstein",  # 95.5 - Featured
         "Python (programming language)",  # 86.2 - Good
         "Dense set",  # 82.5 - Good
@@ -192,7 +192,6 @@ PEER_GROUPS = {
         "Artin–Mazur zeta function",  # 65.0 - Mid-range
         "Alexander Bittner",  # 53.6 - Stub
         "Echinolampas posterocrassa",  # 33.3 - Severe stub
-        "List of animals",  # 3.0 - Minimal stub
     ],
     "developing": [
         "Dense set",  # 82.5 - Good quality

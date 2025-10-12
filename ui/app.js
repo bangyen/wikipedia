@@ -81,7 +81,7 @@ class WikipediaDashboard {
     }
 
         getSampleData(title) {
-            // Simplified to 8 articles with clear score separation (95.5 → 3.0)
+            // 7 proper encyclopedic articles with clear score separation (33.3 → 95.5)
             const sampleArticles = {
             'Albert Einstein': {
                 title: 'Albert Einstein',
@@ -101,6 +101,26 @@ class WikipediaDashboard {
                     sourcing: 77.5,
                     editorial: 85.2,
                     network: 76.7
+                }
+            },
+            'Dense set': {
+                title: 'Dense set',
+                maturity_score: 82.5,
+                pillar_scores: {
+                    structure: 85.0,
+                    sourcing: 80.0,
+                    editorial: 82.0,
+                    network: 83.0
+                }
+            },
+            'Tietze extension theorem': {
+                title: 'Tietze extension theorem',
+                maturity_score: 76.2,
+                pillar_scores: {
+                    structure: 75.0,
+                    sourcing: 77.0,
+                    editorial: 76.0,
+                    network: 77.0
                 }
             },
             'Artin–Mazur zeta function': {
@@ -131,16 +151,6 @@ class WikipediaDashboard {
                     sourcing: 35.0,
                     editorial: 32.0,
                     network: 35.0
-                }
-            },
-            'List of animals': {
-                title: 'List of animals',
-                maturity_score: 3.0,
-                pillar_scores: {
-                    structure: 5.0,
-                    sourcing: 0.0,
-                    editorial: 5.0,
-                    network: 5.0
                 }
             }
         };
