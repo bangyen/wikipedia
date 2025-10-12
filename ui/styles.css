@@ -380,9 +380,17 @@ body {
     text-align: right;
 }
 
-.score-high { color: var(--success); }
-.score-medium { color: var(--warning); }
-.score-low { color: var(--error); }
+/* Score circle keeps white text for accessibility (13:1 contrast on blue) */
+.score-circle.score-high,
+.score-circle.score-medium,
+.score-circle.score-low {
+    color: white;
+}
+
+/* Score colors only applied in table cells */
+.score-cell.score-high { color: var(--success); }
+.score-cell.score-medium { color: var(--warning); }
+.score-cell.score-low { color: var(--error); }
 
 /* Loading state */
 .loading {
