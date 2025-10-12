@@ -29,12 +29,12 @@ wiki_client = WikiClient()
 
 # Sample articles demonstrating full quality spectrum (0-100)
 SAMPLE_ARTICLES = {
-    # Featured/Exceptional tier (90-93) - Featured Articles with academic sources & recent activity
+    # Featured/Exceptional tier (95-96) - Featured Articles with all features detected
     "Albert Einstein": {
         "title": "Albert Einstein",
-        "maturity_score": 92.5,
+        "maturity_score": 95.5,
         "pillar_scores": {
-            "structure": 90.0,
+            "structure": 100.0,
             "sourcing": 100.0,
             "editorial": 89.2,
             "network": 76.7,
@@ -42,9 +42,9 @@ SAMPLE_ARTICLES = {
     },
     "Coffee": {
         "title": "Coffee",
-        "maturity_score": 92.5,
+        "maturity_score": 95.5,
         "pillar_scores": {
-            "structure": 90.0,
+            "structure": 100.0,
             "sourcing": 100.0,
             "editorial": 89.2,
             "network": 76.7,
@@ -52,9 +52,9 @@ SAMPLE_ARTICLES = {
     },
     "World War II": {
         "title": "World War II",
-        "maturity_score": 92.0,
+        "maturity_score": 95.0,
         "pillar_scores": {
-            "structure": 90.0,
+            "structure": 100.0,
             "sourcing": 100.0,
             "editorial": 86.9,
             "network": 76.7,
@@ -154,7 +154,7 @@ def fetch_article_data(title: str) -> Optional[Dict[str, Any]]:
         # Fetch comprehensive article data
         page_content = wiki_client.get_page_content(title)
         sections = wiki_client.get_sections(title)
-        templates = wiki_client.get_templates(title)
+        templates = wiki_client.get_templates(title, tllimit=500)
         revisions = wiki_client.get_revisions(title, rvlimit=100)
         backlinks = wiki_client.get_backlinks(title, bllimit=100)
         citations = wiki_client.get_citations(title, ellimit=100)

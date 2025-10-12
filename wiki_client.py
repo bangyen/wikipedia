@@ -212,6 +212,7 @@ class WikiClient:
         action: str = "query",
         prop: str = "templates",
         tlnamespace: int = 10,
+        tllimit: int = 500,
     ) -> Dict[str, Any]:
         """Fetch templates used in a Wikipedia page.
 
@@ -221,11 +222,12 @@ class WikiClient:
             action: API action (default: query)
             prop: Properties to fetch (default: templates)
             tlnamespace: Template namespace (default: 10)
+            tllimit: Maximum number of templates to return (default: 500)
 
         Returns:
             Dictionary containing page templates and metadata
         """
-        cache_key = self._get_cache_key("templates", title=title)
+        cache_key = self._get_cache_key("templates", title=title, tllimit=tllimit)
 
         params = {
             "format": format,
@@ -233,6 +235,7 @@ class WikiClient:
             "titles": title,
             "prop": prop,
             "tlnamespace": tlnamespace,
+            "tllimit": tllimit,
         }
 
         response = self._make_request(self.base_url, params, cache_key)
