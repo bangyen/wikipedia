@@ -38,8 +38,8 @@ metadata:
   version: '1.0'
 pillars:
   editorial: 0.2
-  network: 0.15
-  sourcing: 0.35
+  network: 0.1
+  sourcing: 0.4
   structure: 0.3
 validation:
   correlation_method: pearson
