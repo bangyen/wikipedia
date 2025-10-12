@@ -182,7 +182,6 @@ body {
 /* Dashboard */
 .dashboard {
     display: grid;
-    gap: var(--space-8);
 }
 
 /* Score overview */
@@ -196,6 +195,7 @@ body {
     border-radius: var(--radius-2xl);
     box-shadow: var(--shadow-md);
     border: 1px solid var(--gray-200);
+    margin-bottom: 2rem;
 }
 
 .score-circle {
@@ -266,6 +266,7 @@ body {
     border-radius: var(--radius-2xl);
     box-shadow: var(--shadow-md);
     border: 1px solid var(--gray-200);
+    margin-bottom: 2rem;
 }
 
 .chart-container h3 {
@@ -287,6 +288,7 @@ body {
     border-radius: var(--radius-2xl);
     box-shadow: var(--shadow-md);
     border: 1px solid var(--gray-200);
+    margin-bottom: var(--space-8);
 }
 
 .peer-comparison h3 {
