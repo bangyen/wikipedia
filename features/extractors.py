@@ -81,10 +81,17 @@ def structure_features(article_data: Dict[str, Any]) -> Dict[str, float]:
     )
     features["has_taxonbar"] = float(any("taxonbar" in name for name in template_names))
 
-    # Content structure analysis
-    features["has_references"] = float("references" in content_text.lower())
-    features["has_external_links"] = float("external links" in content_text.lower())
-    features["has_see_also"] = float("see also" in content_text.lower())
+    # Content structure analysis - use sections data which is more reliable
+    section_titles = [s.get("line", "").lower() for s in sections]
+    features["has_references"] = float(
+        any("reference" in title for title in section_titles)
+    )
+    features["has_external_links"] = float(
+        any("external link" in title for title in section_titles)
+    )
+    features["has_see_also"] = float(
+        any("see also" in title for title in section_titles)
+    )
 
     # Log scaling for large values
     features["log_content_length"] = math.log(max(features["content_length"], 1))
