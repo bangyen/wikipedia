@@ -365,8 +365,9 @@ def editorial_features(article_data: Dict[str, Any]) -> Dict[str, float]:
         features["major_editor_ratio"] = 0.0
 
     # Recent activity score (weighted by recency)
+    # API returns revisions in NEWEST FIRST order, so [:10] gets most recent
     recent_score = 0.0
-    for revision in revisions[-10:]:  # Last 10 revisions
+    for revision in revisions[:10]:  # First 10 revisions (most recent)
         timestamp_str = revision.get("timestamp", "")
         try:
             if timestamp_str:
