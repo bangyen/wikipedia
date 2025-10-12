@@ -184,25 +184,15 @@ PEER_GROUPS = {
         "World War II",  # 95.0 - Featured Article
     ],
     "mixed_quality": [
-        # Featured tier (95-96) - comprehensive, well-sourced
-        "Albert Einstein",  # 95.5
-        # Good tier (83-86) - solid articles
-        "Python (programming language)",  # 86.2
-        "Banana slug",  # 83.6
-        "Dense set",  # 82.5
-        # Developing tier (76)
-        "Tietze extension theorem",  # 76.2
-        # Mid-range (60-75) - moderate quality
-        "Artin–Mazur zeta function",  # 65.0
-        # Stubs (50-59) - short articles with stub penalty
-        "Alexander Bittner",  # 53.6
-        "Zimmert set",  # 49.7
-        # Severe stubs (0-49) - minimal content, severe penalty
-        "Bukjeju County",  # 41.3
-        "Echinolampas posterocrassa",  # 33.3
-        "Karolína Bednářová",  # 29.0
-        "List of colours",  # 10.5
-        "List of animals",  # 3.0
+        # Simplified to 8 articles with clear score separation (95.5 → 3.0)
+        "Albert Einstein",  # 95.5 - Featured
+        "Python (programming language)",  # 86.2 - Good
+        "Dense set",  # 82.5 - Good
+        "Tietze extension theorem",  # 76.2 - Developing
+        "Artin–Mazur zeta function",  # 65.0 - Mid-range
+        "Alexander Bittner",  # 53.6 - Stub
+        "Echinolampas posterocrassa",  # 33.3 - Severe stub
+        "List of animals",  # 3.0 - Minimal stub
     ],
     "developing": [
         "Dense set",  # 82.5 - Good quality
