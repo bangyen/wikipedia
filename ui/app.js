@@ -83,53 +83,53 @@ class WikipediaDashboard {
     getSampleData(title) {
         // Sample articles demonstrating full quality spectrum (0-100)
         const sampleArticles = {
-            // Featured/Exceptional tier (90-100)
+            // High Quality tier (70-80) - Featured Articles
             'Albert Einstein': {
                 title: 'Albert Einstein',
-                maturity_score: 94.5,
+                maturity_score: 75.6,
                 pillar_scores: {
-                    structure: 89.0,
-                    sourcing: 72.0,
-                    editorial: 63.0,
+                    structure: 88.7,
+                    sourcing: 72.2,
+                    editorial: 62.6,
                     network: 76.0
                 }
             },
             'Taylor Swift': {
                 title: 'Taylor Swift',
-                maturity_score: 93.7,
+                maturity_score: 75.0,
                 pillar_scores: {
-                    structure: 80.0,
+                    structure: 79.9,
                     sourcing: 75.0,
-                    editorial: 67.0,
+                    editorial: 66.9,
                     network: 76.0
                 }
             },
             'Coffee': {
                 title: 'Coffee',
-                maturity_score: 93.4,
+                maturity_score: 74.7,
                 pillar_scores: {
-                    structure: 82.0,
+                    structure: 82.5,
                     sourcing: 75.0,
-                    editorial: 62.0,
+                    editorial: 61.8,
                     network: 76.0
                 }
             },
             'World War II': {
                 title: 'World War II',
-                maturity_score: 91.0,
+                maturity_score: 72.8,
                 pillar_scores: {
-                    structure: 86.0,
-                    sourcing: 70.0,
-                    editorial: 57.0,
+                    structure: 85.5,
+                    sourcing: 70.3,
+                    editorial: 57.2,
                     network: 76.0
                 }
             },
-            // High Quality tier (75-89)
+            // Good tier (65-75) - Good Articles
             'Micronation': {
                 title: 'Micronation',
-                maturity_score: 88.8,
+                maturity_score: 71.0,
                 pillar_scores: {
-                    structure: 75.0,
+                    structure: 75.3,
                     sourcing: 75.0,
                     editorial: 54.0,
                     network: 76.0
@@ -137,11 +137,11 @@ class WikipediaDashboard {
             },
             'Python (programming language)': {
                 title: 'Python (programming language)',
-                maturity_score: 82.5,
+                maturity_score: 70.0,
                 pillar_scores: {
-                    structure: 67.0,
+                    structure: 67.2,
                     sourcing: 75.0,
-                    editorial: 61.0,
+                    editorial: 60.9,
                     network: 76.0
                 }
             },
