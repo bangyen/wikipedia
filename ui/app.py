@@ -8,7 +8,7 @@ across four key pillars: structure, sourcing, editorial, and network.
 import logging
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from flask import Flask, Response, jsonify, render_template, request
 from flask_cors import CORS
@@ -298,7 +298,7 @@ def dashboard() -> str:
 
 
 @app.route("/api/article/<title>")
-def get_article(title: str) -> Response:
+def get_article(title: str) -> Union[Response, tuple[Response, int]]:
     """Get maturity score for a specific article."""
     try:
         result = calculate_maturity_score(title)
@@ -312,7 +312,7 @@ def get_article(title: str) -> Response:
 
 
 @app.route("/api/peers/<title>")
-def get_peer_articles(title: str) -> Response:
+def get_peer_articles(title: str) -> Union[Response, tuple[Response, int]]:
     """Get peer articles for comparison."""
     try:
         peer_titles = get_peer_group(title)
