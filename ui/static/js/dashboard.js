@@ -1,11 +1,59 @@
+const COLORS = {
+    primary: '#339AF0',
+    secondary: '#1C7ED6',
+    tertiary: '#74C0FC',
+    quaternary: '#4DABF7',
+    background: '#F8F9FA',
+    text: '#1D1D1F',
+    success: '#51CF66',
+    warning: '#FCC419',
+    error: '#FF6B6B'
+};
+
+const CHART_CONFIG = {
+    responsive: true,
+    maintainAspectRatio: true,
+    aspectRatio: 2,
+    plugins: {
+        legend: {
+            display: true,
+            position: 'bottom',
+            labels: {
+                font: { family: 'Space Grotesk', size: 12, weight: '500' },
+                color: '#6E6E73',
+                padding: 16,
+                usePointStyle: true,
+                pointStyle: 'rect'
+            }
+        }
+    },
+    scales: {
+        x: {
+            grid: { display: false, drawBorder: false },
+            ticks: {
+                font: { family: 'Space Grotesk', size: 11 },
+                color: '#86868B'
+            }
+        },
+        y: {
+            grid: { color: '#E1E4E8', drawBorder: false },
+            ticks: {
+                font: { family: 'Space Grotesk', size: 11 },
+                color: '#86868B'
+            }
+        }
+    }
+};
+
 class WikipediaDashboard {
     constructor() {
         this.currentArticle = null;
         this.peerArticles = [];
-        this.radarChart = null;
+        this.charts = {};
         this.sortState = { column: null, direction: 'asc' };
         
         this.initializeElements();
+        this.initNavigation();
         this.bindEvents();
         this.loadSampleData();
     }
@@ -13,8 +61,7 @@ class WikipediaDashboard {
     initializeElements() {
         this.searchInput = document.getElementById('articleSearch');
         this.searchBtn = document.getElementById('searchBtn');
-        this.searchResults = document.getElementById('searchResults');
-        this.dashboard = document.getElementById('dashboard');
+        this.articleResult = document.getElementById('articleResult');
         this.loading = document.getElementById('loading');
         
         // Score elements
@@ -25,9 +72,44 @@ class WikipediaDashboard {
         this.editorialScore = document.getElementById('editorialScore');
         this.networkScore = document.getElementById('networkScore');
         
-        // Chart and table
+        // Charts
         this.radarCanvas = document.getElementById('radarChart');
         this.peerTableBody = document.getElementById('peerTableBody');
+    }
+
+    initNavigation() {
+        const navItems = document.querySelectorAll('.nav-item');
+        const views = document.querySelectorAll('.view-container');
+        
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const viewName = item.getAttribute('data-view');
+                
+                navItems.forEach(n => n.classList.remove('active'));
+                item.classList.add('active');
+                
+                views.forEach(v => v.classList.add('hidden'));
+                document.getElementById(`${viewName}-view`).classList.remove('hidden');
+                
+                // Update page title based on view
+                const titles = {
+                    'search': 'Article Search',
+                    'compare': 'Article Comparison'
+                };
+                document.querySelector('.page-title').textContent = titles[viewName] || 'Dashboard';
+                
+                // Load data for specific views
+                if (viewName === 'compare') {
+                    if (this.peerArticles.length > 0) {
+                        // Render existing peer data if available
+                        this.renderPeerTable();
+                    } else if (this.currentArticle) {
+                        // Load peer articles if we have a current article but no peers yet
+                        this.loadPeerArticles(this.currentArticle.title);
+                    }
+                }
+            });
+        });
     }
 
     bindEvents() {
@@ -35,6 +117,16 @@ class WikipediaDashboard {
         this.searchInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') this.searchArticle();
         });
+
+        // Refresh button
+        const refreshBtn = document.getElementById('refresh-btn');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => {
+                if (this.currentArticle) {
+                    this.searchArticle();
+                }
+            });
+        }
 
         // Table sorting
         document.querySelectorAll('.sortable').forEach(header => {
@@ -52,13 +144,11 @@ class WikipediaDashboard {
         this.showLoading();
         
         try {
-            // For demo purposes, we'll use sample data
-            // In production, this would call the Python backend
             const articleData = await this.fetchArticleData(query);
             this.displayArticle(articleData);
         } catch (error) {
             console.error('Error fetching article:', error);
-            this.showError('Failed to fetch article data');
+            this.showError('Failed to fetch article data. Please check the article title.');
         } finally {
             this.hideLoading();
         }
@@ -71,111 +161,11 @@ class WikipediaDashboard {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
             const data = await response.json();
-            console.log(`Fetched real data for: ${title}`, data);
             return data;
         } catch (error) {
             console.error('API error:', error);
-            this.showError(`Failed to fetch article "${title}". Please check the article title.`);
             throw error;
         }
-    }
-
-        getSampleData(title) {
-            // 7 proper encyclopedic articles with clear score separation (33.3 → 95.5)
-            const sampleArticles = {
-            'Albert Einstein': {
-                title: 'Albert Einstein',
-                maturity_score: 95.5,
-                pillar_scores: {
-                    structure: 100.0,
-                    sourcing: 100.0,
-                    editorial: 89.2,
-                    network: 76.7
-                }
-            },
-            'Python (programming language)': {
-                title: 'Python (programming language)',
-                maturity_score: 86.2,
-                pillar_scores: {
-                    structure: 88.8,
-                    sourcing: 77.5,
-                    editorial: 85.2,
-                    network: 76.7
-                }
-            },
-            'Dense set': {
-                title: 'Dense set',
-                maturity_score: 82.5,
-                pillar_scores: {
-                    structure: 85.0,
-                    sourcing: 80.0,
-                    editorial: 82.0,
-                    network: 83.0
-                }
-            },
-            'Tietze extension theorem': {
-                title: 'Tietze extension theorem',
-                maturity_score: 76.2,
-                pillar_scores: {
-                    structure: 75.0,
-                    sourcing: 77.0,
-                    editorial: 76.0,
-                    network: 77.0
-                }
-            },
-            'Artin–Mazur zeta function': {
-                title: 'Artin–Mazur zeta function',
-                maturity_score: 65.0,
-                pillar_scores: {
-                    structure: 60.0,
-                    sourcing: 70.0,
-                    editorial: 65.0,
-                    network: 65.0
-                }
-            },
-            'Alexander Bittner': {
-                title: 'Alexander Bittner',
-                maturity_score: 53.6,
-                pillar_scores: {
-                    structure: 50.0,
-                    sourcing: 60.0,
-                    editorial: 50.0,
-                    network: 55.0
-                }
-            },
-            'Echinolampas posterocrassa': {
-                title: 'Echinolampas posterocrassa',
-                maturity_score: 33.3,
-                pillar_scores: {
-                    structure: 30.0,
-                    sourcing: 35.0,
-                    editorial: 32.0,
-                    network: 35.0
-                }
-            }
-        };
-            
-            return sampleArticles[title];
-        }
-
-    generateMockData(title) {
-        // Generate realistic mock data on 0-100 scale
-        const baseScore = Math.random() * 60 + 30; // 30-90 range
-        const structure = Math.random() * 60 + 20; // 20-80
-        const sourcing = Math.random() * 60 + 20; // 20-80
-        const editorial = Math.random() * 60 + 20; // 20-80
-        const network = Math.random() * 60 + 20; // 20-80
-        
-        return {
-            title: title,
-            maturity_score: baseScore,
-            pillar_scores: {
-                structure: structure,
-                sourcing: sourcing,
-                editorial: editorial,
-                network: network
-            }
-        };
     }
 
     displayArticle(articleData) {
@@ -189,17 +179,17 @@ class WikipediaDashboard {
         this.editorialScore.textContent = articleData.pillar_scores.editorial.toFixed(1);
         this.networkScore.textContent = articleData.pillar_scores.network.toFixed(1);
         
-        // Update score circle color based on score
+        // Update score circle color
         this.updateScoreCircle(articleData.maturity_score);
         
         // Create radar chart
         this.createRadarChart(articleData.pillar_scores);
         
-        // Load peer articles
+        // Load peer articles for comparison view
         this.loadPeerArticles(articleData.title);
         
-        // Show dashboard
-        this.dashboard.style.display = 'block';
+        // Show result
+        this.articleResult.style.display = 'block';
     }
 
     updateScoreCircle(score) {
@@ -213,13 +203,13 @@ class WikipediaDashboard {
     }
 
     createRadarChart(pillarScores) {
-        if (this.radarChart) {
-            this.radarChart.destroy();
+        if (this.charts.radar) {
+            this.charts.radar.destroy();
         }
 
         const ctx = this.radarCanvas.getContext('2d');
         
-        this.radarChart = new Chart(ctx, {
+        this.charts.radar = new Chart(ctx, {
             type: 'radar',
             data: {
                 labels: ['Structure', 'Sourcing', 'Editorial', 'Network'],
@@ -231,10 +221,10 @@ class WikipediaDashboard {
                         pillarScores.editorial,
                         pillarScores.network
                     ],
-                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                    borderColor: 'rgb(37, 99, 235)',
+                    backgroundColor: 'rgba(51, 154, 240, 0.1)',
+                    borderColor: COLORS.primary,
                     borderWidth: 2,
-                    pointBackgroundColor: 'rgb(37, 99, 235)',
+                    pointBackgroundColor: COLORS.primary,
                     pointBorderColor: '#fff',
                     pointBorderWidth: 2,
                     pointRadius: 6,
@@ -259,13 +249,13 @@ class WikipediaDashboard {
                                 family: 'Space Grotesk',
                                 size: 12
                             },
-                            color: '#64748b'
+                            color: '#6E6E73'
                         },
                         grid: {
-                            color: '#e2e8f0'
+                            color: '#E1E4E8'
                         },
                         angleLines: {
-                            color: '#e2e8f0'
+                            color: '#E1E4E8'
                         },
                         pointLabels: {
                             font: {
@@ -273,13 +263,8 @@ class WikipediaDashboard {
                                 size: 14,
                                 weight: '500'
                             },
-                            color: '#334155'
+                            color: '#1D1D1F'
                         }
-                    }
-                },
-                elements: {
-                    line: {
-                        tension: 0.1
                     }
                 }
             }
@@ -288,35 +273,26 @@ class WikipediaDashboard {
 
     async loadPeerArticles(currentTitle) {
         try {
-            // Try to fetch real peer articles from API
             const response = await fetch(`/api/peers/${encodeURIComponent(currentTitle)}`);
             if (response.ok) {
                 const peerData = await response.json();
                 this.peerArticles = [this.currentArticle, ...peerData];
+                
+                // Only render table if Compare view is currently active
+                const compareView = document.getElementById('compare-view');
+                if (compareView && !compareView.classList.contains('hidden')) {
+                    this.renderPeerTable();
+                }
             } else {
                 throw new Error('Failed to fetch peer articles');
             }
         } catch (error) {
             console.error('Error fetching peer articles:', error);
-            // Fallback to sample peer articles
-            const peerTitles = [
-                'Machine Learning',
-                'Artificial Intelligence',
-                'Computer Science',
-                'Data Science',
-                'Neural Networks',
-                'Deep Learning'
-            ].filter(title => title !== currentTitle).slice(0, 6);
-
-            this.peerArticles = [this.currentArticle];
-            
-            for (const title of peerTitles) {
-                const peerData = await this.fetchArticleData(title);
-                this.peerArticles.push(peerData);
+            const compareView = document.getElementById('compare-view');
+            if (compareView && !compareView.classList.contains('hidden')) {
+                this.peerTableBody.innerHTML = '<tr><td colspan="6" class="loading">Failed to load peer articles</td></tr>';
             }
         }
-        
-        this.renderPeerTable();
     }
 
     renderPeerTable() {
@@ -327,7 +303,7 @@ class WikipediaDashboard {
             const isCurrent = article.title === this.currentArticle?.title;
             
             if (isCurrent) {
-                row.style.backgroundColor = 'rgba(37, 99, 235, 0.05)';
+                row.style.backgroundColor = 'rgba(51, 154, 240, 0.05)';
                 row.style.fontWeight = '600';
             }
             
@@ -368,14 +344,6 @@ class WikipediaDashboard {
     sortTable(column) {
         const direction = this.sortState.column === column && this.sortState.direction === 'asc' ? 'desc' : 'asc';
         this.sortState = { column, direction };
-        
-        // Update sort indicators
-        document.querySelectorAll('.sortable').forEach(header => {
-            header.classList.remove('sorted');
-            if (header.dataset.column === column) {
-                header.classList.add('sorted');
-            }
-        });
         
         // Sort peer articles
         this.peerArticles.sort((a, b) => {
@@ -419,7 +387,6 @@ class WikipediaDashboard {
     }
 
     showError(message) {
-        // Simple error display - could be enhanced with a toast notification
         alert(message);
     }
 }
@@ -428,3 +395,4 @@ class WikipediaDashboard {
 document.addEventListener('DOMContentLoaded', () => {
     new WikipediaDashboard();
 });
+

@@ -1,4 +1,5 @@
-.PHONY: init fmt lint type test all
+.PHONY: init fmt lint type test dashboard all
+
 init: ## install tooling
 	python -m pip install -U pip
 	pip install -e ".[dev]"
@@ -15,5 +16,8 @@ type: ## type-check
 
 test: ## run tests
 	python -m pytest
+
+dashboard: ## run the web dashboard
+	python ui/app.py
 
 all: fmt lint type test
