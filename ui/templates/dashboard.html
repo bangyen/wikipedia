@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wikipedia Maturity Dashboard</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                    <path d="M16 2L4 8v8c0 7.5 5.2 14.5 12 16 6.8-1.5 12-8.5 12-16V8l-12-6z" fill="#339AF0" opacity="0.2"/>
+                    <path d="M16 2L4 8v8c0 7.5 5.2 14.5 12 16 6.8-1.5 12-8.5 12-16V8l-12-6z" stroke="#339AF0" stroke-width="2"/>
+                    <text x="16" y="21" font-size="14" font-weight="700" fill="#339AF0" text-anchor="middle">W</text>
+                </svg>
+                <span>Wiki Quality</span>
+            </div>
+            
+            <nav class="nav">
+                <button class="nav-item active" data-view="search">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="2"/>
+                        <path d="M12.5 12.5L18 18" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    <span>Search</span>
+                </button>
+                
+                <button class="nav-item" data-view="compare">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M2 2v16h16" stroke="currentColor" stroke-width="2"/>
+                        <path d="M6 10l3-3 3 3 6-6" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    <span>Compare</span>
+                </button>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="status-indicator">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Live</span>
+                </div>
+            </div>
+        </aside>
+        
+        <main class="main-content">
+            <header class="header">
+                <h1 class="page-title">Article Search</h1>
+                <div class="header-actions">
+                    <button class="btn-secondary" id="refresh-btn">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                            <path d="M14 2V6H10" stroke="currentColor" stroke-width="2"/>
+                            <path d="M2 14V10H6" stroke="currentColor" stroke-width="2"/>
+                            <path d="M14 6C13.5 4 12 2.5 10 2C6 1 2 3 2 8C2 13 6 15 10 14C12 13.5 13.5 12 14 10" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                        Refresh
+                    </button>
+                </div>
+            </header>
+            
+            <!-- Search View -->
+            <div class="view-container" id="search-view">
+                <div class="search-section">
+                    <div class="search-container">
+                        <input 
+                            type="text" 
+                            id="articleSearch" 
+                            class="search-input" 
+                            placeholder="Enter Wikipedia article title..."
+                            autocomplete="off"
+                        >
+                        <button id="searchBtn" class="search-btn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <path d="m21 21-4.35-4.35"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="article-result" id="articleResult" style="display: none;">
+                    <div class="score-overview">
+                        <div class="overall-score">
+                            <div class="score-circle">
+                                <div class="score-value" id="overallScore">0</div>
+                                <div class="score-label">Overall Score</div>
+                            </div>
+                        </div>
+                        <div class="article-info">
+                            <h2 id="articleTitle">Article Title</h2>
+                            <div class="pillar-scores">
+                                <div class="pillar-score">
+                                    <span class="pillar-label">Structure</span>
+                                    <span class="pillar-value" id="structureScore">0</span>
+                                </div>
+                                <div class="pillar-score">
+                                    <span class="pillar-label">Sourcing</span>
+                                    <span class="pillar-value" id="sourcingScore">0</span>
+                                </div>
+                                <div class="pillar-score">
+                                    <span class="pillar-label">Editorial</span>
+                                    <span class="pillar-value" id="editorialScore">0</span>
+                                </div>
+                                <div class="pillar-score">
+                                    <span class="pillar-label">Network</span>
+                                    <span class="pillar-value" id="networkScore">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-card">
+                        <h3 class="chart-title">Pillar Analysis</h3>
+                        <canvas id="radarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Compare View -->
+            <div class="view-container hidden" id="compare-view">
+                <div class="data-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="sortable" data-column="title">Article Title</th>
+                                <th class="sortable score-header" data-column="overall">Overall Score</th>
+                                <th class="sortable score-header" data-column="structure">Structure</th>
+                                <th class="sortable score-header" data-column="sourcing">Sourcing</th>
+                                <th class="sortable score-header" data-column="editorial">Editorial</th>
+                                <th class="sortable score-header" data-column="network">Network</th>
+                            </tr>
+                        </thead>
+                        <tbody id="peerTableBody">
+                            <tr>
+                                <td colspan="6" class="loading">Search for an article to see peer comparisons</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <div id="loading" class="loading" style="display: none;">
+        <div class="loading-spinner"></div>
+        <p>Analyzing article...</p>
+    </div>
+    
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>
+

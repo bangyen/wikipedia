@@ -1,16 +1,21 @@
 #!/usr/bin/env python3
-"""Flask API server for Wikipedia Maturity Dashboard.
+"""Flask application serving Wikipedia Maturity Dashboard.
 
-This server provides REST endpoints for the JavaScript dashboard to fetch
-article maturity scores and peer comparisons.
+This dashboard provides real-time analysis of Wikipedia article quality
+across four key pillars: structure, sourcing, editorial, and network.
 """
 
+import logging
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, Response, jsonify, render_template, request
 from flask_cors import CORS
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
@@ -20,7 +25,7 @@ sys.path.insert(0, str(project_root))
 from models.baseline import HeuristicBaselineModel  # noqa: E402
 from wiki_client import WikiClient  # noqa: E402
 
-app = Flask(__name__, static_folder=".", static_url_path="")
+app = Flask(__name__)
 CORS(app)
 
 # Initialize model and client
@@ -287,13 +292,13 @@ def calculate_maturity_score(title: str) -> Optional[Dict[str, Any]]:
 
 
 @app.route("/")
-def index() -> Any:
-    """Serve the main dashboard page."""
-    return send_from_directory(".", "index.html")
+def dashboard() -> str:
+    """Render the main dashboard interface."""
+    return str(render_template("dashboard.html"))
 
 
 @app.route("/api/article/<title>")
-def get_article(title: str) -> Any:
+def get_article(title: str) -> Response:
     """Get maturity score for a specific article."""
     try:
         result = calculate_maturity_score(title)
@@ -302,11 +307,12 @@ def get_article(title: str) -> Any:
         else:
             return jsonify({"error": "Article not found or could not be analyzed"}), 404
     except Exception as e:
+        logger.error(f"Error fetching article {title}: {e}")
         return jsonify({"error": str(e)}), 500
 
 
 @app.route("/api/peers/<title>")
-def get_peer_articles(title: str) -> Any:
+def get_peer_articles(title: str) -> Response:
     """Get peer articles for comparison."""
     try:
         peer_titles = get_peer_group(title)
@@ -320,11 +326,12 @@ def get_peer_articles(title: str) -> Any:
 
         return jsonify(peer_articles)
     except Exception as e:
+        logger.error(f"Error fetching peers for {title}: {e}")
         return jsonify({"error": str(e)}), 500
 
 
 @app.route("/api/search")
-def search_articles() -> Any:
+def search_articles() -> Response:
     """Search for articles (placeholder for future implementation)."""
     query = request.args.get("q", "")
     if not query:
@@ -344,19 +351,66 @@ def search_articles() -> Any:
     return jsonify(results)
 
 
-@app.route("/api/health")
-def health_check() -> Any:
+@app.route("/api/overview")
+def overview_endpoint() -> Response:
+    """Return overview metrics for the dashboard."""
+    articles = list(SAMPLE_ARTICLES.values())
+    data = {
+        "metrics": {
+            "total_articles": len(SAMPLE_ARTICLES),
+            "avg_score": sum(a["maturity_score"] for a in articles)  # type: ignore
+            / len(SAMPLE_ARTICLES),
+            "high_quality": len(
+                [a for a in articles if a["maturity_score"] >= 85]  # type: ignore
+            ),
+            "needs_work": len(
+                [a for a in articles if a["maturity_score"] < 60]  # type: ignore
+            ),
+        },
+        "score_distribution": {
+            "labels": [
+                "Featured (90+)",
+                "Good (70-89)",
+                "Developing (50-69)",
+                "Stub (<50)",
+            ],
+            "values": [
+                len([a for a in articles if a["maturity_score"] >= 90]),  # type: ignore
+                len(
+                    [
+                        a
+                        for a in articles
+                        if 70 <= a["maturity_score"] < 90  # type: ignore
+                    ]
+                ),
+                len(
+                    [
+                        a
+                        for a in articles
+                        if 50 <= a["maturity_score"] < 70  # type: ignore
+                    ]
+                ),
+                len([a for a in articles if a["maturity_score"] < 50]),  # type: ignore
+            ],
+        },
+    }
+    return jsonify(data)
+
+
+@app.route("/api/healthz")
+def health_check() -> Response:
     """Health check endpoint."""
     return jsonify({"status": "healthy", "model": "loaded"})
 
 
 if __name__ == "__main__":
-    print("Starting Wikipedia Maturity Dashboard API...")
-    print("Dashboard available at: http://localhost:5000")
-    print("API endpoints:")
-    print("  GET /api/article/<title> - Get article maturity score")
-    print("  GET /api/peers/<title> - Get peer articles")
-    print("  GET /api/search?q=<query> - Search articles")
-    print("  GET /api/health - Health check")
+    logger.info("Starting Wikipedia Maturity Dashboard...")
+    logger.info("Dashboard available at: http://localhost:5000")
+    logger.info("API endpoints:")
+    logger.info("  GET /api/article/<title> - Get article maturity score")
+    logger.info("  GET /api/peers/<title> - Get peer articles")
+    logger.info("  GET /api/search?q=<query> - Search articles")
+    logger.info("  GET /api/overview - Get dashboard overview")
+    logger.info("  GET /api/healthz - Health check")
 
-    app.run(debug=False, host="0.0.0.0", port=5000, use_reloader=False)
+    app.run(debug=True, host="0.0.0.0", port=5000)
