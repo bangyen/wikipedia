@@ -62,6 +62,11 @@ body {
     margin-bottom: 32px;
 }
 
+.logo svg {
+    flex-shrink: 0;
+    display: block;
+}
+
 .logo span {
     font-size: 18px;
     font-weight: 600;
