@@ -11,10 +11,12 @@ from .extractors import (
     editorial_features,
     network_features,
 )
+from .correlation_analysis import CorrelationAnalyzer
 
 __all__ = [
     "structure_features",
     "sourcing_features",
     "editorial_features",
     "network_features",
+    "CorrelationAnalyzer",
 ]
