@@ -70,12 +70,11 @@ class TestHeuristicBaselineModel:
         assert model.weights_file == "models/weights.yaml"
         assert "pillars" in model.weights
         assert "features" in model.weights
-        assert model.pillar_weights["structure"] == 0.3
-        assert (
-            model.pillar_weights["sourcing"] == 0.4
-        )  # From weights.yaml (we changed code but not YAML)
-        assert model.pillar_weights["editorial"] == 0.2
-        assert model.pillar_weights["network"] == 0.1  # From weights.yaml
+        # Values from weights.yaml after percentile-based calibration
+        assert model.pillar_weights["structure"] == 0.2
+        assert model.pillar_weights["sourcing"] == 0.35
+        assert model.pillar_weights["editorial"] == 0.3
+        assert model.pillar_weights["network"] == 0.15
 
     def test_model_initialization_with_custom_weights(self) -> None:
         """Test model initialization with custom weights file."""
@@ -119,8 +118,9 @@ class TestHeuristicBaselineModel:
 
         # Check specific normalizations
         assert normalized["has_infobox"] == 1.0
-        # academic_source_ratio gets boosted by our quality curve (0.3 / 0.35 max = 0.857, then boosted)
-        assert 0.85 <= normalized["academic_source_ratio"] <= 1.0
+        # academic_source_ratio: with percentile-based normalization (p10=0, p90=0.3)
+        # value of 0.3 maps to (0.3 - 0) / (0.3 - 0) = 1.0
+        assert 0.95 <= normalized["academic_source_ratio"] <= 1.0
 
     def test_calculate_pillar_scores(self) -> None:
         """Test pillar score calculation."""

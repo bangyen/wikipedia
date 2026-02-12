@@ -36,11 +36,84 @@ metadata:
   description: Weights for heuristic Wikipedia article maturity scoring
   target_correlation: 0.6
   version: '1.0'
+normalization_ranges:
+  academic_source_ratio:
+  - 0.5
+  - 0.5
+  authority_score:
+  - 1.0
+  - 1.0
+  avg_section_depth:
+  - 2.0
+  - 2.0
+  citation_count:
+  - 2.0
+  - 2.0
+  citation_density:
+  - 0.04878048780487805
+  - 0.04878048780487805
+  citations_per_1k_tokens:
+  - 250.0
+  - 250.0
+  connectivity_score:
+  - 0.6
+  - 0.6
+  content_length:
+  - 41.0
+  - 41.0
+  editor_diversity:
+  - 0.0
+  - 0.0
+  external_link_count:
+  - 2.0
+  - 2.0
+  has_external_links:
+  - 0.0
+  - 0.0
+  has_infobox:
+  - 1.0
+  - 1.0
+  has_references:
+  - 1.0
+  - 1.0
+  has_reliable_sources:
+  - 1.0
+  - 1.0
+  inbound_links:
+  - 2.0
+  - 2.0
+  link_density:
+  - 0.04878048780487805
+  - 0.04878048780487805
+  major_editor_ratio:
+  - 1.0
+  - 1.0
+  outbound_links:
+  - 0.0
+  - 0.0
+  recent_activity_score:
+  - 0.0
+  - 0.0
+  section_count:
+  - 3.0
+  - 3.0
+  sections_per_1k_chars:
+  - 73.17073170731707
+  - 73.17073170731707
+  template_count:
+  - 2.0
+  - 2.0
+  total_editors:
+  - 1.0
+  - 1.0
+  total_revisions:
+  - 1.0
+  - 1.0
 pillars:
-  editorial: 0.2
-  network: 0.1
-  sourcing: 0.4
-  structure: 0.3
+  editorial: 0.3
+  network: 0.15
+  sourcing: 0.35
+  structure: 0.2
 validation:
   correlation_method: pearson
   min_sample_size: 100
