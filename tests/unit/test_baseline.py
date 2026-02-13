@@ -193,7 +193,9 @@ class TestHeuristicBaselineModel:
 
         # Mock numpy.corrcoef to return a numpy array
         mock_corr_matrix = np.array([[1.0, 0.7], [0.7, 1.0]])
-        with patch("numpy.corrcoef", Mock(return_value=mock_corr_matrix)):
+        with patch("numpy.corrcoef", Mock(return_value=mock_corr_matrix)), patch(
+            "models.baseline.HeuristicBaselineModel.save_weights"
+        ):
             results = self.model.calibrate_weights(training_data)
 
         # Check calibration results
@@ -258,7 +260,9 @@ class TestHeuristicBaselineModel:
         """Test correlation calculation in calibration."""
         # Mock numpy.corrcoef to return known correlation
         mock_corr_matrix = np.array([[1.0, 0.8], [0.8, 1.0]])
-        with patch("numpy.corrcoef", Mock(return_value=mock_corr_matrix)):
+        with patch("numpy.corrcoef", Mock(return_value=mock_corr_matrix)), patch(
+            "models.baseline.HeuristicBaselineModel.save_weights"
+        ):
             training_data = [
                 (self.sample_article_data, 80.0),
                 (self.sample_article_data, 60.0),

@@ -299,7 +299,18 @@ class HeuristicBaselineModel:
                     # No artificial amplification, natural distribution
                     normalized[feature_name] = max(0.0, min(1.0, norm_value))
                 else:
-                    normalized[feature_name] = 0.0
+                    # Degenerate range (p10 == p90).
+                    # If it's a binary/ratio feature, just clamp to 0-1.
+                    # Otherwise, if value equals the constant value, assume 1.0 (or 0.5? or 0.0?)
+                    # For metrics where the "constant" is the ideal (e.g. 1.0 for has_infobox),
+                    # matching it should be good. But generally, no variance = no information.
+                    # However, for manual binary features, we trust the raw value more.
+                    if feature_name.startswith("has_") or feature_name.endswith(
+                        "_ratio"
+                    ):
+                        normalized[feature_name] = max(0.0, min(1.0, value))
+                    else:
+                        normalized[feature_name] = 0.0
             else:
                 # For binary features or already normalized features
                 if feature_name.startswith("has_") or feature_name.endswith("_ratio"):
