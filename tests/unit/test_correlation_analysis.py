@@ -4,6 +4,7 @@ This module tests the CorrelationAnalyzer class including correlation computatio
 redundancy detection, and feature removal suggestions.
 """
 
+from typing import Any, Dict, List
 import numpy as np
 import pytest
 
@@ -213,7 +214,7 @@ class TestCorrelationAnalyzer:
 
     def test_handles_non_numeric_values(self) -> None:
         """Test that analyzer converts non-numeric values to NaN gracefully."""
-        features_list = [
+        features_list: List[Dict[str, Any]] = [
             {"feat_a": 1.0, "feat_b": "invalid"},
             {"feat_a": 2.0, "feat_b": 4.0},
             {"feat_a": 3.0, "feat_b": 6.0},

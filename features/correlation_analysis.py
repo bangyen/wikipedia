@@ -5,8 +5,7 @@ redundancies, multicollinearity, and feature importance. Helps optimize feature
 selection and identify candidates for removal or combination.
 """
 
-from typing import Any, Dict, List, Optional, Tuple
-import math
+from typing import Any, Dict, List, Optional, Tuple, Set, cast
 
 import numpy as np
 
@@ -42,7 +41,7 @@ class CorrelationAnalyzer:
             raise ValueError("features_list cannot be empty")
 
         # Extract feature names and build matrix
-        all_feature_names = set()
+        all_feature_names: Set[str] = set()
         for feature_dict in features_list:
             all_feature_names.update(feature_dict.keys())
 
@@ -99,7 +98,7 @@ class CorrelationAnalyzer:
                 else:
                     corr_matrix[i, j] = 0.0
 
-        return corr_matrix
+        return cast(np.ndarray, corr_matrix)
 
     def get_high_correlations(
         self, exclude_self: bool = True
@@ -120,7 +119,7 @@ class CorrelationAnalyzer:
 
         for i in range(len(self.feature_names)):
             for j in range(i + 1, len(self.feature_names)):
-                corr = self.correlation_matrix[i, j]
+                corr = float(self.correlation_matrix[i, j])
 
                 if abs(corr) > self.threshold_high:
                     high_corr_pairs.append(
@@ -173,6 +172,9 @@ class CorrelationAnalyzer:
         """
         if feature_name not in self.feature_names:
             raise ValueError(f"Feature '{feature_name}' not found in fitted features")
+
+        if self.correlation_matrix is None:
+            raise RuntimeError("Must call fit() before getting correlations")
 
         idx = self.feature_names.index(feature_name)
         correlations = self.correlation_matrix[idx, :].copy()

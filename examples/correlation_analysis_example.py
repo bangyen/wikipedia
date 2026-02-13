@@ -17,9 +17,50 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from features.correlation_analysis import CorrelationAnalyzer
-from models.baseline import HeuristicBaselineModel
-from wiki_client import WikiClient
+from features.correlation_analysis import CorrelationAnalyzer  # noqa: E402
+from models.baseline import HeuristicBaselineModel  # noqa: E402
+from wiki_client import WikiClient  # noqa: E402
+from typing import Any, Dict, Optional  # noqa: E402
+
+
+def fetch_article_data(client: WikiClient, title: str) -> Optional[Dict[str, Any]]:
+    """Fetch article data helper."""
+    try:
+        page_content = client.get_page_content(title)
+        sections = client.get_sections(title)
+        templates = client.get_templates(title)
+        revisions = client.get_revisions(title, rvlimit=20)
+        backlinks = client.get_backlinks(title, bllimit=50)
+        citations = client.get_citations(title, ellimit=50)
+
+        return {
+            "title": title,
+            "data": {
+                "parse": page_content.get("data", {}).get("parse", {}),
+                "query": {
+                    "pages": page_content.get("data", {})
+                    .get("query", {})
+                    .get("pages", {}),
+                    "sections": sections.get("data", {})
+                    .get("parse", {})
+                    .get("sections", []),
+                    "templates": templates.get("data", {})
+                    .get("query", {})
+                    .get("pages", {}),
+                    "revisions": revisions.get("data", {})
+                    .get("query", {})
+                    .get("pages", {}),
+                    "backlinks": backlinks.get("data", {})
+                    .get("query", {})
+                    .get("backlinks", []),
+                    "extlinks": citations.get("data", {})
+                    .get("query", {})
+                    .get("pages", {}),
+                },
+            },
+        }
+    except Exception:
+        return None
 
 
 def example_optimize_features() -> None:
@@ -49,7 +90,7 @@ def example_optimize_features() -> None:
 
     for title in titles[:5]:  # Use 5 articles for quick demo
         try:
-            article = client.get_article_data(title)
+            article = fetch_article_data(client, title)
             if article:
                 articles.append(article)
                 print(f"  ✓ {title}")

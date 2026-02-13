@@ -15,6 +15,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 import yaml  # type: ignore
+from scipy.optimize import minimize  # type: ignore
 
 from features import (
     structure_features,
@@ -446,17 +447,9 @@ class HeuristicBaselineModel:
         content_length = raw_features.get("content_length", 0)
         section_count = raw_features.get("section_count", 0)
 
-        stub_penalty = 1.0  # No penalty by default
-
-        if content_length < 500 and section_count < 4:
-            # Severe stub: very short content + minimal structure
-            stub_penalty = 0.55
-        elif content_length < 1000 and section_count < 6:
-            # Developing stub: short content + limited structure
-            stub_penalty = 0.75
-        elif content_length < 2000 and section_count < 8:
-            # Minor stub: somewhat short content
-            stub_penalty = 0.90
+        stub_penalty = self._calculate_continuous_stub_penalty(
+            content_length, section_count
+        )
 
         maturity_score = maturity_score * stub_penalty
 
@@ -475,6 +468,47 @@ class HeuristicBaselineModel:
             },
         }
 
+    def _calculate_continuous_stub_penalty(
+        self, content_length: float, section_count: float
+    ) -> float:
+        """Calculate a continuous stub penalty.
+
+        Uses a logistic function to provide a smooth transition from penalized to
+        unpenalized states, avoiding cliffs in the scoring function.
+
+        Args:
+            content_length: Length of content in characters.
+            section_count: Number of sections.
+
+        Returns:
+            Penalty factor between 0.0 (severe penalty) and 1.0 (no penalty).
+        """
+        # Content length sigmoid
+        # Center at 1500 chars, slope 0.003
+        # < 500 chars -> ~0.05
+        # 1500 chars -> 0.5
+        # > 3000 chars -> ~0.99
+        len_score = 1 / (1 + math.exp(-0.003 * (content_length - 1500)))
+
+        # Section count sigmoid
+        # Center at 6 sections, slope 0.8
+        # < 2 sections -> ~0.04
+        # 6 sections -> 0.5
+        # > 10 sections -> ~0.96
+        sec_score = 1 / (1 + math.exp(-0.8 * (section_count - 6)))
+
+        # Combined score, biased towards the lower of the two (so you need both)
+        # Using harmonic mean interaction or just geometric mean
+        # Here we use a weighted geometric mean, slightly favoring content length
+        combined_score = (len_score**0.6) * (sec_score**0.4)
+
+        # Map to penalty range [0.5, 1.0]
+        # We don't want to go below 0.5 even for empty articles (mostly likely)
+        # to avoid completely zeroing out other good metrics if they exist
+        penalty = 0.5 + 0.5 * combined_score
+
+        return float(min(1.0, max(0.0, penalty)))
+
     def calibrate_weights(
         self,
         training_data: List[Tuple[Dict[str, Any], float]],
@@ -483,7 +517,7 @@ class HeuristicBaselineModel:
         """Calibrate weights using training data to achieve target correlation.
 
         First calibrates normalization ranges from feature data, then optimizes
-        pillar weights using grid search to maximize correlation with target scores.
+        pillar weights using scipy.optimize to maximize correlation with target scores.
 
         Args:
             training_data: List of (article_data, target_score) tuples.
@@ -507,63 +541,116 @@ class HeuristicBaselineModel:
         ]
         self.calibrate_normalization_ranges(raw_features_list)
 
-        # Grid search with more combinations for better optimization
-        best_weights = self.weights.copy()
-        best_correlation = -2.0  # Initialize to worse than any valid correlation
+        # Prepare data for optimization
+        # Pre-calculate normalized features to avoid re-computing in loop
+        normalized_data: List[Dict[str, Any]] = []
+        target_scores = []
 
-        pillar_combinations = [
-            {"structure": 0.20, "sourcing": 0.35, "editorial": 0.30, "network": 0.15},
-            {"structure": 0.25, "sourcing": 0.35, "editorial": 0.25, "network": 0.15},
-            {"structure": 0.25, "sourcing": 0.30, "editorial": 0.25, "network": 0.20},
-            {"structure": 0.30, "sourcing": 0.30, "editorial": 0.25, "network": 0.15},
-            {"structure": 0.25, "sourcing": 0.40, "editorial": 0.20, "network": 0.15},
-            {"structure": 0.20, "sourcing": 0.30, "editorial": 0.30, "network": 0.20},
-            {"structure": 0.30, "sourcing": 0.25, "editorial": 0.25, "network": 0.20},
-            {"structure": 0.15, "sourcing": 0.40, "editorial": 0.30, "network": 0.15},
-        ]
+        for i, article_data in enumerate(all_features):
+            raw = raw_features_list[i]
+            norm = self.normalize_features(raw)
+            # Pre-calculate pillar raw scores (without weights)
+            # This is complex because pillar scores depend on feature weights,
+            # which we are NOT optimizing here (yet). We are optimizing pillar weights.
+            pillar_scores = self.calculate_pillar_scores(norm)
 
-        for pillar_weights in pillar_combinations:
-            # Temporarily update weights
-            old_weights = self.pillar_weights.copy()
-            self.pillar_weights = pillar_weights
+            # We also need stub penalty
+            stub_penalty = self._calculate_continuous_stub_penalty(
+                raw.get("content_length", 0), raw.get("section_count", 0)
+            )
+
+            normalized_data.append(
+                {"pillar_scores": pillar_scores, "stub_penalty": stub_penalty}
+            )
+            target_scores.append(training_data[i][1])
+
+        # Objective function to MINIMIZE (negative correlation)
+        def objective(weights_array: np.ndarray) -> float:
+            # weights_array is [w_structure, w_sourcing, w_editorial, w_network]
+            # Normalize to sum to 1.0 logic is handled by constraints, but good to be safe
+
+            w_struct, w_sourc, w_edit, w_net = weights_array
+
+            predicted = []
+            for item in normalized_data:
+                p_scores = item["pillar_scores"]
+                # Weighted average
+                raw_score = (
+                    p_scores.get("structure", 0) * w_struct
+                    + p_scores.get("sourcing", 0) * w_sourc
+                    + p_scores.get("editorial", 0) * w_edit
+                    + p_scores.get("network", 0) * w_net
+                )
+
+                # Normalize by sum of weights (should be ~1.0)
+                weight_sum = w_struct + w_sourc + w_edit + w_net
+                if weight_sum > 0:
+                    raw_score /= weight_sum
+
+                # Apply penalty
+                final_score = raw_score * item["stub_penalty"] * 100
+                predicted.append(final_score)
 
             # Calculate correlation
-            predicted_scores = []
-            target_scores = []
+            if len(predicted) < 2:
+                return 0.0
 
-            for article_data, target_score in training_data:
-                result = self.calculate_maturity_score(article_data)
-                predicted_scores.append(result["maturity_score"])
-                target_scores.append(target_score)
+            try:
+                # We want to MAXIMIZE correlation, so MINIMIZE negative correlation
+                corr_matrix = np.corrcoef(predicted, target_scores)
+                # handle NaN
+                if np.isnan(corr_matrix).any():
+                    return 0.0
+                return float(-corr_matrix[0, 1])
+            except Exception:
+                return 0.0
 
-            if len(predicted_scores) > 1:
-                # Calculate Spearman correlation (more robust to outliers)
-                try:
-                    correlation_matrix = np.corrcoef(predicted_scores, target_scores)
-                    correlation = float(correlation_matrix[0, 1])
+        # Initial weights
+        initial_weights = [
+            self.pillar_weights.get("structure", 0.25),
+            self.pillar_weights.get("sourcing", 0.25),
+            self.pillar_weights.get("editorial", 0.25),
+            self.pillar_weights.get("network", 0.25),
+        ]
 
-                    # Track best combination
-                    if correlation > best_correlation:
-                        best_correlation = correlation
-                        best_weights["pillars"] = pillar_weights.copy()
-                except (ValueError, RuntimeWarning):
-                    # Skip if correlation cannot be computed
-                    pass
+        # Constraints: sum to 1.0
+        constraints = {"type": "eq", "fun": lambda x: np.sum(x) - 1.0}
 
-            # Restore original weights
-            self.pillar_weights = old_weights
+        # Bounds: each weight between 0.05 (min relevance) and 0.6
+        bounds = [(0.05, 0.6) for _ in range(4)]
 
-        # Update weights if we found a meaningful improvement
-        if best_correlation > -1.0:  # Valid correlation found
+        # Optimization
+        result = minimize(
+            objective,
+            initial_weights,
+            method="SLSQP",
+            bounds=bounds,
+            constraints=constraints,
+        )
+
+        best_correlation = -result.fun if result.success else 0.0
+
+        # Update weights if successful
+        if result.success and best_correlation > 0:
+            optimized_weights = result.x
+            best_weights = self.weights.copy()
+            best_weights["pillars"] = {
+                "structure": float(optimized_weights[0]),
+                "sourcing": float(optimized_weights[1]),
+                "editorial": float(optimized_weights[2]),
+                "network": float(optimized_weights[3]),
+            }
             self.weights = best_weights
             self.pillar_weights = best_weights["pillars"]
             self.save_weights()
 
         return {
             "best_correlation": best_correlation,
-            "calibrated_weights": best_weights,
+            "calibrated_weights": self.weights,
             "target_correlation": target_correlation,
             "normalization_ranges": self.normalization_ranges,
+            "optimization_success": result.success,
+            "message": result.message,
         }
 
     def save_weights(self, output_file: Optional[str] = None) -> None:

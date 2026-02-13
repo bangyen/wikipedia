@@ -17,7 +17,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from features.correlation_analysis import CorrelationAnalyzer
+from features.correlation_analysis import CorrelationAnalyzer  # noqa: E402
 
 
 def demo_basic_usage() -> None:
@@ -110,7 +110,7 @@ def demo_redundancy_detection() -> None:
     print(f"\n🔍 Found {len(high_corr)} high-correlation pair(s):")
     for feat1, feat2, corr in high_corr:
         print(f"  {feat1} <-> {feat2}: r={corr:+.3f}")
-        print(f"    → One of these features is likely redundant")
+        print("    → One of these features is likely redundant")
 
     print("\n🗑️  Suggested removals:")
     removals = analyzer.suggest_features_to_remove(high_corr)
@@ -155,9 +155,9 @@ def demo_weak_feature_detection() -> None:
 
     low_corr = analyzer.get_low_correlations()
     if low_corr:
-        print(f"\n⚠️  Weak features (low correlation to others):")
-        for feat, avg_corr in low_corr:
-            print(f"  - {feat}: avg |r|={avg_corr:.3f}")
+        print("\n⚠️  Weak features (low correlation to others):")
+        for feat, avg_c in low_corr:
+            print(f"  - {feat}: avg |r|={avg_c:.3f}")
 
 
 def demo_multicollinearity() -> None:

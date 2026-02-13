@@ -19,14 +19,55 @@ from typing import Any, Dict, List
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from features.correlation_analysis import CorrelationAnalyzer
-from features.extractors import (
+from features.correlation_analysis import CorrelationAnalyzer  # noqa: E402
+from features.extractors import (  # noqa: E402
     editorial_features,
     network_features,
     sourcing_features,
     structure_features,
 )
-from wiki_client import WikiClient
+from wiki_client import WikiClient  # noqa: E402
+from typing import Optional  # noqa: E402
+
+
+def fetch_article_data(client: WikiClient, title: str) -> Optional[Dict[str, Any]]:
+    """Fetch article data helper."""
+    try:
+        page_content = client.get_page_content(title)
+        sections = client.get_sections(title)
+        templates = client.get_templates(title)
+        revisions = client.get_revisions(title, rvlimit=20)
+        backlinks = client.get_backlinks(title, bllimit=50)
+        citations = client.get_citations(title, ellimit=50)
+
+        return {
+            "title": title,
+            "data": {
+                "parse": page_content.get("data", {}).get("parse", {}),
+                "query": {
+                    "pages": page_content.get("data", {})
+                    .get("query", {})
+                    .get("pages", {}),
+                    "sections": sections.get("data", {})
+                    .get("parse", {})
+                    .get("sections", []),
+                    "templates": templates.get("data", {})
+                    .get("query", {})
+                    .get("pages", {}),
+                    "revisions": revisions.get("data", {})
+                    .get("query", {})
+                    .get("pages", {}),
+                    "backlinks": backlinks.get("data", {})
+                    .get("query", {})
+                    .get("backlinks", []),
+                    "extlinks": citations.get("data", {})
+                    .get("query", {})
+                    .get("pages", {}),
+                },
+            },
+        }
+    except Exception:
+        return None
 
 
 def extract_all_features(article_data: Dict[str, Any]) -> Dict[str, float]:
@@ -82,7 +123,7 @@ def fetch_sample_articles(count: int = 50) -> List[Dict[str, Any]]:
     articles = []
     for title in sample_titles[:count]:
         try:
-            article_data = client.get_article_data(title)
+            article_data = fetch_article_data(client, title)
             if article_data:
                 articles.append(article_data)
                 print(f"✓ Fetched: {title}")

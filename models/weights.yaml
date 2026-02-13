@@ -38,77 +38,77 @@ metadata:
   version: '1.0'
 normalization_ranges:
   academic_source_ratio:
-  - 0.0
-  - 0.3
+  - 0.5
+  - 0.5
   authority_score:
-  - 0.0
+  - 1.0
   - 1.0
   avg_section_depth:
-  - 1.0
-  - 2.5
+  - 2.0
+  - 2.0
   citation_count:
-  - 1.0
-  - 50.0
+  - 2.0
+  - 2.0
   citation_density:
-  - 0.0001
-  - 0.02
+  - 0.04878048780487805
+  - 0.04878048780487805
   citations_per_1k_tokens:
-  - 0.5
-  - 25.0
+  - 250.0
+  - 250.0
   connectivity_score:
-  - 0.2
-  - 0.8
-  content_length:
-  - 200.0
-  - 3500.0
-  editor_diversity:
-  - 0.1
   - 0.6
+  - 0.6
+  content_length:
+  - 41.0
+  - 41.0
+  editor_diversity:
+  - 0.0
+  - 0.0
   external_link_count:
-  - 1.0
-  - 40.0
+  - 2.0
+  - 2.0
   has_external_links:
   - 0.0
-  - 1.0
-  has_infobox:
   - 0.0
+  has_infobox:
+  - 1.0
   - 1.0
   has_references:
-  - 0.0
+  - 1.0
   - 1.0
   has_reliable_sources:
-  - 0.0
+  - 1.0
   - 1.0
   inbound_links:
-  - 1.0
-  - 60.0
+  - 2.0
+  - 2.0
   link_density:
-  - 0.0001
-  - 0.01
+  - 0.04878048780487805
+  - 0.04878048780487805
   major_editor_ratio:
-  - 0.0
-  - 0.5
+  - 1.0
+  - 1.0
   outbound_links:
-  - 5.0
-  - 150.0
+  - 0.0
+  - 0.0
   recent_activity_score:
   - 0.0
-  - 5.0
+  - 0.0
   section_count:
-  - 2.0
-  - 25.0
+  - 3.0
+  - 3.0
   sections_per_1k_chars:
-  - 0.5
-  - 8.0
+  - 73.17073170731707
+  - 73.17073170731707
   template_count:
-  - 1.0
-  - 15.0
+  - 2.0
+  - 2.0
   total_editors:
   - 1.0
-  - 25.0
+  - 1.0
   total_revisions:
-  - 2.0
-  - 100.0
+  - 1.0
+  - 1.0
 pillars:
   editorial: 0.3
   network: 0.15
