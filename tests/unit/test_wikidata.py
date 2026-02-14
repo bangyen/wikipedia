@@ -7,7 +7,7 @@ caching, error handling, and feature extraction from Wikidata data.
 import pytest
 from unittest.mock import Mock, patch
 
-from features.wikidata import (
+from wikipedia.features.wikidata import (
     WikidataClient,
     wikidata_features,
     _get_zero_wikidata_features,
@@ -41,7 +41,7 @@ class TestWikidataClient:
         assert client._cache.maxsize == 500
         assert client._cache.ttl == 1800
 
-    @patch("features.wikidata.requests.Session.get")
+    @patch("wikipedia.features.wikidata.requests.Session.get")
     def test_get_wikidata_id_success(self, mock_get: Mock) -> None:
         """Test successful Wikidata ID retrieval."""
         # Mock response
@@ -56,7 +56,7 @@ class TestWikidataClient:
         assert result == "Q123"
         mock_get.assert_called_once()
 
-    @patch("features.wikidata.requests.Session.get")
+    @patch("wikipedia.features.wikidata.requests.Session.get")
     def test_get_wikidata_id_not_found(self, mock_get: Mock) -> None:
         """Test Wikidata ID retrieval when not found."""
         # Mock response
@@ -72,7 +72,7 @@ class TestWikidataClient:
 
         assert result is None
 
-    @patch("features.wikidata.requests.Session.get")
+    @patch("wikipedia.features.wikidata.requests.Session.get")
     def test_get_wikidata_id_error(self, mock_get: Mock) -> None:
         """Test Wikidata ID retrieval with API error."""
         mock_get.side_effect = Exception("API Error")
@@ -82,7 +82,7 @@ class TestWikidataClient:
 
         assert result is None
 
-    @patch("features.wikidata.requests.Session.get")
+    @patch("wikipedia.features.wikidata.requests.Session.get")
     def test_get_statements_count_success(self, mock_get: Mock) -> None:
         """Test successful statements count retrieval."""
         # Mock response
@@ -111,7 +111,7 @@ class TestWikidataClient:
         assert result["total_statements"] == 3
         assert result["referenced_statements"] == 2
 
-    @patch("features.wikidata.requests.Session.get")
+    @patch("wikipedia.features.wikidata.requests.Session.get")
     def test_get_statements_count_error(self, mock_get: Mock) -> None:
         """Test statements count retrieval with API error."""
         mock_get.side_effect = Exception("API Error")
@@ -122,7 +122,7 @@ class TestWikidataClient:
         assert result["total_statements"] == 0
         assert result["referenced_statements"] == 0
 
-    @patch("features.wikidata.requests.Session.get")
+    @patch("wikipedia.features.wikidata.requests.Session.get")
     def test_get_sitelinks_count_success(self, mock_get: Mock) -> None:
         """Test successful sitelinks count retrieval."""
         # Mock response
@@ -146,7 +146,7 @@ class TestWikidataClient:
 
         assert result == 3
 
-    @patch("features.wikidata.requests.Session.get")
+    @patch("wikipedia.features.wikidata.requests.Session.get")
     def test_get_sitelinks_count_error(self, mock_get: Mock) -> None:
         """Test sitelinks count retrieval with API error."""
         mock_get.side_effect = Exception("API Error")
@@ -231,7 +231,7 @@ class TestWikidataFeatures:
         """Test successful Wikidata feature extraction."""
         article_data = {"title": "Albert Einstein", "data": {}}
 
-        with patch("features.wikidata.WikidataClient") as mock_client_class:
+        with patch("wikipedia.features.wikidata.WikidataClient") as mock_client_class:
             mock_client = Mock()
             mock_client_class.return_value = mock_client
             mock_client.get_completeness_data.return_value = {
@@ -281,7 +281,7 @@ class TestWikidataFeatures:
         """Test Wikidata feature extraction with error."""
         article_data = {"title": "Albert Einstein", "data": {}}
 
-        with patch("features.wikidata.WikidataClient") as mock_client_class:
+        with patch("wikipedia.features.wikidata.WikidataClient") as mock_client_class:
             mock_client = Mock()
             mock_client_class.return_value = mock_client
             mock_client.get_completeness_data.side_effect = Exception("API Error")

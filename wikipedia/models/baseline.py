@@ -17,7 +17,7 @@ import numpy as np
 import yaml  # type: ignore
 from scipy.optimize import minimize  # type: ignore
 
-from features import (
+from wikipedia.features import (
     structure_features,
     sourcing_features,
     editorial_features,
@@ -50,7 +50,7 @@ class HeuristicBaselineModel:
             normalization_ranges: Dictionary mapping feature names to (percentile_low, percentile_high)
                                  tuples representing the normalization range. If None, uses defaults.
         """
-        self.weights_file = weights_file or "models/weights.yaml"
+        self.weights_file = weights_file or "wikipedia/models/weights.yaml"
         self.normalization_ranges: Dict[str, Tuple[float, float]] = {}
         self.weights = self._load_weights()
         self.pillar_weights = self.weights.get("pillars", {})

@@ -17,7 +17,7 @@ import yaml
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from models.baseline import HeuristicBaselineModel  # noqa: E402
+from wikipedia.models.baseline import HeuristicBaselineModel  # noqa: E402
 
 
 def create_temporal_aware_weights() -> Dict[str, Any]:

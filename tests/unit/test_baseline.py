@@ -8,7 +8,7 @@ import math
 import numpy as np
 from unittest.mock import Mock, patch, mock_open
 
-from models.baseline import HeuristicBaselineModel
+from wikipedia.models.baseline import HeuristicBaselineModel
 
 
 class TestHeuristicBaselineModel:
@@ -67,7 +67,7 @@ class TestHeuristicBaselineModel:
         """Test model initialization with default weights."""
         model = HeuristicBaselineModel()
 
-        assert model.weights_file == "models/weights.yaml"
+        assert model.weights_file == "wikipedia/models/weights.yaml"
         assert "pillars" in model.weights
         assert "features" in model.weights
         # Values from weights.yaml after percentile-based calibration
@@ -194,7 +194,7 @@ class TestHeuristicBaselineModel:
         # Mock numpy.corrcoef to return a numpy array
         mock_corr_matrix = np.array([[1.0, 0.7], [0.7, 1.0]])
         with patch("numpy.corrcoef", Mock(return_value=mock_corr_matrix)), patch(
-            "models.baseline.HeuristicBaselineModel.save_weights"
+            "wikipedia.models.baseline.HeuristicBaselineModel.save_weights"
         ):
             results = self.model.calibrate_weights(training_data)
 
@@ -261,7 +261,7 @@ class TestHeuristicBaselineModel:
         # Mock numpy.corrcoef to return known correlation
         mock_corr_matrix = np.array([[1.0, 0.8], [0.8, 1.0]])
         with patch("numpy.corrcoef", Mock(return_value=mock_corr_matrix)), patch(
-            "models.baseline.HeuristicBaselineModel.save_weights"
+            "wikipedia.models.baseline.HeuristicBaselineModel.save_weights"
         ):
             training_data = [
                 (self.sample_article_data, 80.0),

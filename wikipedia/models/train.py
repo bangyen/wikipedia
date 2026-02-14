@@ -8,7 +8,6 @@ Performs 5-fold cross-validation and reports AUC, precision, recall metrics.
 
 import json
 import pickle
-import sys
 from pathlib import Path
 from typing import Any, Dict, Tuple
 
@@ -25,18 +24,13 @@ from sklearn.metrics import (  # type: ignore
 )
 from sklearn.model_selection import StratifiedKFold, train_test_split  # type: ignore
 
-# Add project root to path
-project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root))
-
-# Import after path modification
-from features.extractors import (  # noqa: E402
+from wikipedia.features.extractors import (
     editorial_features,
     network_features,
     sourcing_features,
     structure_features,
 )
-from wiki_client import WikiClient  # noqa: E402
+from wikipedia.wiki_client import WikiClient
 
 
 class WikipediaMaturityClassifier:

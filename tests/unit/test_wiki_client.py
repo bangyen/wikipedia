@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch
 
 import requests  # type: ignore
 
-from wiki_client import WikiClient
+from wikipedia.wiki_client import WikiClient
 
 
 class TestWikiClient:
@@ -51,7 +51,7 @@ class TestWikiClient:
         assert client.rate_limit_delay == 0.5
         assert client.max_retries == 5
 
-    @patch("wiki_client.requests.Session.get")
+    @patch("wikipedia.wiki_client.requests.Session.get")
     def test_get_page_content(self, mock_get: Mock) -> None:
         """Test get_page_content method."""
         # Mock response
@@ -85,7 +85,7 @@ class TestWikiClient:
         call_args = mock_get.call_args
         assert "Albert Einstein" in str(call_args[1]["params"]["titles"])
 
-    @patch("wiki_client.requests.Session.get")
+    @patch("wikipedia.wiki_client.requests.Session.get")
     def test_get_sections(self, mock_get: Mock) -> None:
         """Test get_sections method."""
         # Mock response
@@ -113,7 +113,7 @@ class TestWikiClient:
         call_args = mock_get.call_args
         assert "Albert Einstein" in str(call_args[1]["params"]["page"])
 
-    @patch("wiki_client.requests.Session.get")
+    @patch("wikipedia.wiki_client.requests.Session.get")
     def test_get_templates(self, mock_get: Mock) -> None:
         """Test get_templates method."""
         # Mock response
@@ -140,7 +140,7 @@ class TestWikiClient:
         assert "data" in result
         assert result["title"] == "Albert Einstein"
 
-    @patch("wiki_client.requests.Session.get")
+    @patch("wikipedia.wiki_client.requests.Session.get")
     def test_get_revisions(self, mock_get: Mock) -> None:
         """Test get_revisions method."""
         # Mock response
@@ -172,7 +172,7 @@ class TestWikiClient:
         assert "data" in result
         assert result["title"] == "Albert Einstein"
 
-    @patch("wiki_client.requests.Session.get")
+    @patch("wikipedia.wiki_client.requests.Session.get")
     def test_get_backlinks(self, mock_get: Mock) -> None:
         """Test get_backlinks method."""
         # Mock response
@@ -195,7 +195,7 @@ class TestWikiClient:
         assert "data" in result
         assert result["title"] == "Albert Einstein"
 
-    @patch("wiki_client.requests.Session.get")
+    @patch("wikipedia.wiki_client.requests.Session.get")
     def test_get_pageviews(self, mock_get: Mock) -> None:
         """Test get_pageviews method."""
         # Mock response
@@ -229,7 +229,7 @@ class TestWikiClient:
         assert result["start_date"] == "20230101"
         assert result["end_date"] == "20230107"
 
-    @patch("wiki_client.requests.Session.get")
+    @patch("wikipedia.wiki_client.requests.Session.get")
     def test_get_citations(self, mock_get: Mock) -> None:
         """Test get_citations method."""
         # Mock response
@@ -269,7 +269,7 @@ class TestWikiClient:
         assert "cache_ttl" in cache_info
         assert cache_info["cache_size"] == 0
 
-    @patch("wiki_client.requests.Session.get")
+    @patch("wikipedia.wiki_client.requests.Session.get")
     def test_caching_works(self, mock_get: Mock) -> None:
         """Test that caching prevents duplicate API calls."""
         # Mock response
@@ -286,7 +286,7 @@ class TestWikiClient:
         self.client.get_page_content("Test Page")
         assert mock_get.call_count == 1  # Should not increase
 
-    @patch("wiki_client.requests.Session.get")
+    @patch("wikipedia.wiki_client.requests.Session.get")
     def test_rate_limiting(self, mock_get: Mock) -> None:
         """Test rate limiting functionality."""
         # Mock response
@@ -296,14 +296,14 @@ class TestWikiClient:
         mock_get.return_value = mock_response
 
         # Mock time.sleep to avoid actual delays in tests
-        with patch("wiki_client.time.sleep") as mock_sleep:
+        with patch("wikipedia.wiki_client.time.sleep") as mock_sleep:
             self.client.get_page_content("Page 1")
             self.client.get_page_content("Page 2")
 
             # Should have called sleep for rate limiting
             assert mock_sleep.call_count >= 1
 
-    @patch("wiki_client.requests.Session.get")
+    @patch("wikipedia.wiki_client.requests.Session.get")
     def test_retry_logic(self, mock_get: Mock) -> None:
         """Test retry logic for failed requests."""
         # Mock response that fails first, then succeeds
@@ -338,7 +338,7 @@ class TestWikiClient:
 
     def test_json_serializable_output(self) -> None:
         """Test that all methods return JSON-serializable output."""
-        with patch("wiki_client.requests.Session.get") as mock_get:
+        with patch("wikipedia.wiki_client.requests.Session.get") as mock_get:
             mock_response = Mock()
             mock_response.json.return_value = {"test": "data"}
             mock_response.raise_for_status.return_value = None

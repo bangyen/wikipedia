@@ -16,8 +16,8 @@ from typing import Any, Dict
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from models.baseline import HeuristicBaselineModel
-from wiki_client import WikiClient
+from wikipedia.models.baseline import HeuristicBaselineModel
+from wikipedia.wiki_client import WikiClient
 
 # Configure logging
 logging.basicConfig(

@@ -14,8 +14,8 @@ import numpy as np
 import requests  # type: ignore
 from tqdm import tqdm
 
-from models.baseline import HeuristicBaselineModel
-from wiki_client import WikiClient
+from wikipedia.models.baseline import HeuristicBaselineModel
+from wikipedia.wiki_client import WikiClient
 
 
 class WeightCalibrator:

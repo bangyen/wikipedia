@@ -2,7 +2,7 @@ import os
 import tempfile
 import yaml
 from typing import Any, Dict, List, Tuple
-from models.baseline import HeuristicBaselineModel
+from wikipedia.models.baseline import HeuristicBaselineModel
 
 
 class TestOptimization:

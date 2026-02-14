@@ -8,7 +8,7 @@ including PageRank, betweenness centrality, and orphan detection metrics.
 import math
 import pytest
 
-from features.linkgraph import linkgraph_features
+from wikipedia.features.linkgraph import linkgraph_features
 
 
 class TestLinkGraphFeatures:

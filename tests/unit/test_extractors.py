@@ -5,7 +5,7 @@ from datetime import datetime, timezone, timedelta
 
 from typing import Any, Dict
 
-from features.extractors import (
+from wikipedia.features.extractors import (
     structure_features,
     sourcing_features,
     editorial_features,

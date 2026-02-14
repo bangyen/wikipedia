@@ -700,7 +700,7 @@ def all_features(article_data: Dict[str, Any]) -> Dict[str, float]:
 
     # Import and add link graph features
     try:
-        from features.linkgraph import linkgraph_features
+        from wikipedia.features.linkgraph import linkgraph_features
 
         features.update(linkgraph_features(article_data))
     except ImportError:
@@ -709,7 +709,7 @@ def all_features(article_data: Dict[str, Any]) -> Dict[str, float]:
 
     # Import and add Wikidata features
     try:
-        from features.wikidata import wikidata_features
+        from wikipedia.features.wikidata import wikidata_features
 
         features.update(wikidata_features(article_data))
     except ImportError:

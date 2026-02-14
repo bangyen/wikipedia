@@ -8,7 +8,7 @@ from typing import Any, Dict, List
 import numpy as np
 import pytest
 
-from features.correlation_analysis import CorrelationAnalyzer
+from wikipedia.features.correlation_analysis import CorrelationAnalyzer
 
 
 class TestCorrelationAnalyzer:

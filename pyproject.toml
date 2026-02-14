@@ -78,6 +78,7 @@ Issues = "https://github.com/yourusername/package-name/issues"
 
 [tool.setuptools.packages.find]
 where = ["."]
+include = ["wikipedia*"]
 
 [tool.setuptools.package-dir]
 "" = "."

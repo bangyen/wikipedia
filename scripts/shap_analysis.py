@@ -23,7 +23,7 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 # Import after path modification
-from models.train import WikipediaMaturityClassifier  # noqa: E402
+from wikipedia.models.train import WikipediaMaturityClassifier  # noqa: E402
 
 
 class SHAPAnalyzer:

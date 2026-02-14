@@ -19,14 +19,14 @@ from typing import Any, Dict, List
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from features.correlation_analysis import CorrelationAnalyzer  # noqa: E402
-from features.extractors import (  # noqa: E402
+from wikipedia.features.correlation_analysis import CorrelationAnalyzer  # noqa: E402
+from wikipedia.features.extractors import (  # noqa: E402
     editorial_features,
     network_features,
     sourcing_features,
     structure_features,
 )
-from wiki_client import WikiClient  # noqa: E402
+from wikipedia.wiki_client import WikiClient  # noqa: E402
 from typing import Optional  # noqa: E402
 
 
