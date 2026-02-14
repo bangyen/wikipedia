@@ -47,3 +47,10 @@ dashboard:
     echo "Dashboard will be available at http://localhost:5000"
     {{PYTHON}} ui/app.py
 
+# run regression audit
+audit:
+    {{PYTHON}} scripts/audit_scores.py
+
+
+
+

@@ -54,7 +54,9 @@ class WikiClient:
         self.max_retries = max_retries
 
         # Initialize cache with TTL
-        self._cache = TTLCache(maxsize=max_cache_size, ttl=cache_ttl)
+        self._cache: TTLCache[str, Dict[str, Any]] = TTLCache(
+            maxsize=max_cache_size, ttl=cache_ttl
+        )
 
         # Session for connection pooling
         self._session = requests.Session()

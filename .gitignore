@@ -76,3 +76,6 @@ Desktop.ini
 
 # Generated output files
 output/
+
+# Audit data
+audit_data/

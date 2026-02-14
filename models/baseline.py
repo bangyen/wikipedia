@@ -178,6 +178,9 @@ class HeuristicBaselineModel:
             "connectivity_score": (0.2, 0.8),  # p10=0.2, p90=0.8
             "link_density": (0.0001, 0.01),  # p10=0.0001, p90=0.01
             "authority_score": (0, 1.0),  # p10=0, p90=1.0
+            "hub_score": (0, 1.0),  # p10=0, p90=1.0
+            "link_balance": (0, 1.0),  # p10=0, p90=1.0
+            "network_centrality": (0, 1.0),  # p10=0, p90=1.0
         }
 
     def calibrate_normalization_ranges(
@@ -305,15 +308,19 @@ class HeuristicBaselineModel:
                     # For metrics where the "constant" is the ideal (e.g. 1.0 for has_infobox),
                     # matching it should be good. But generally, no variance = no information.
                     # However, for manual binary features, we trust the raw value more.
-                    if feature_name.startswith("has_") or feature_name.endswith(
-                        "_ratio"
+                    if feature_name.startswith("has_") or any(
+                        feature_name.endswith(suffix)
+                        for suffix in ["_ratio", "_score", "_index"]
                     ):
                         normalized[feature_name] = max(0.0, min(1.0, value))
                     else:
                         normalized[feature_name] = 0.0
             else:
                 # For binary features or already normalized features
-                if feature_name.startswith("has_") or feature_name.endswith("_ratio"):
+                if feature_name.startswith("has_") or any(
+                    feature_name.endswith(suffix)
+                    for suffix in ["_ratio", "_score", "_index"]
+                ):
                     normalized[feature_name] = max(0.0, min(1.0, value))
                 else:
                     # Log scale normalization for large values

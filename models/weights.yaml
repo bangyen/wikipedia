@@ -79,15 +79,24 @@ normalization_ranges:
   has_reliable_sources:
   - 0.0
   - 1.0
+  hub_score:
+  - 0.0
+  - 1.0
   inbound_links:
   - 1.0
   - 60.0
+  link_balance:
+  - 0.0
+  - 1.0
   link_density:
   - 0.0001
   - 0.01
   major_editor_ratio:
   - 0.0
   - 0.5
+  network_centrality:
+  - 0.0
+  - 1.0
   outbound_links:
   - 5.0
   - 150.0

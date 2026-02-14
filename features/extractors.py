@@ -186,7 +186,19 @@ def sourcing_features(article_data: Dict[str, Any]) -> Dict[str, float]:
         ):
             academic_count += 1
         elif any(
-            domain in url for domain in [".com/news", "bbc", "cnn", "reuters", "ap.org"]
+            domain in url
+            for domain in [
+                ".com/news",
+                "bbc",
+                "cnn",
+                "reuters",
+                "ap.org",
+                "nytimes",
+                "washingtonpost",
+                "theguardian",
+                "wsj",
+                "bloomberg",
+            ]
         ):
             news_count += 1
         elif any(domain in url for domain in [".gov", ".mil"]):
@@ -209,10 +221,11 @@ def sourcing_features(article_data: Dict[str, Any]) -> Dict[str, float]:
         features["org_source_ratio"] = 0.0
 
     # Source quality indicators
+    # Relaxed thresholds: absolute counts OR ratios
     features["has_reliable_sources"] = float(
-        features["academic_source_ratio"] > 0.1
-        or features["gov_source_ratio"] > 0.1
-        or features["news_source_ratio"] > 0.2
+        (features["academic_source_ratio"] > 0.05 or academic_count >= 3)
+        or (features["gov_source_ratio"] > 0.05 or gov_count >= 3)
+        or (features["news_source_ratio"] > 0.1 or news_count >= 5)
     )
 
     # Log scaling
