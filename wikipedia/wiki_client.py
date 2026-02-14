@@ -188,7 +188,27 @@ class WikiClient:
         Returns:
             Dictionary containing page sections and metadata
         """
-        cache_key = self._get_cache_key("sections", title=title)
+        return self.parse_page(title, format=format, action=action, prop=prop)
+
+    def parse_page(
+        self,
+        title: str,
+        format: str = "json",
+        action: str = "parse",
+        prop: str = "text|sections|templates|categories|images|externallinks",
+    ) -> Dict[str, Any]:
+        """Fetch full parsed page data from Wikipedia.
+
+        Args:
+            title: Page title to parse
+            format: Response format (default: json)
+            action: API action (default: parse)
+            prop: Properties to fetch (text, sections, templates, etc.)
+
+        Returns:
+            Dictionary containing parsed page data and metadata
+        """
+        cache_key = self._get_cache_key("parse", title=title, prop=prop)
 
         params = {
             "format": format,

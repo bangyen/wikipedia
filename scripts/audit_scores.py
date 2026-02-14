@@ -49,7 +49,7 @@ def deep_update(target: Dict[str, Any], source: Dict[str, Any]) -> None:
 
 def fetch_full_article_data(client: WikiClient, title: str) -> Dict[str, Any]:
     """Fetch all necessary data for an article from Wikipedia APIs."""
-    logger.info(f"Fetching data for '{title}'...")
+    # Silent fetching for audit
 
     # Initialize container for merged data
     # We want to mimic the structure: {'data': {'query': ..., 'parse': ...}}
@@ -62,28 +62,28 @@ def fetch_full_article_data(client: WikiClient, title: str) -> Dict[str, Any]:
         deep_update(full_data, data)
 
     try:
-        # 1. Page Content (Extracts) - action=query
-        merge(client.get_page_content(title))
+        # 1. Full Page Data (actions=parse) - gets text, sections, categories
+        merge(client.parse_page(title))
 
-        # 2. Sections - action=parse
-        merge(client.get_sections(title))
+        # 2. Page Content metadata - action=query
+        merge(client.get_page_content(title))
 
         # 3. Templates - action=query
         merge(client.get_templates(title))
 
         # 4. Revisions - action=query
         merge(
-            client.get_revisions(title, rvlimit=50)
+            client.get_revisions(title, rvlimit=500)
         )  # Get more revisions for better stats
 
         # 5. Citations (Extlinks) - action=query
-        merge(client.get_citations(title, ellimit=100))
+        merge(client.get_citations(title, ellimit=500))
 
         # 6. Internal Links - action=query
-        merge(client.get_links(title))
+        merge(client.get_links(title, pllimit=500))
 
         # 7. Backlinks - action=query
-        merge(client.get_backlinks(title))
+        merge(client.get_backlinks(title, bllimit=500))
 
         # 8. Pageviews (optional, usually separate)
         # Not strictly needed for current baseline features, skipping to save time/complexity
@@ -115,7 +115,7 @@ def main() -> None:
 
         # Load local or fetch remote
         if file_path.exists():
-            logger.info(f"Loading local data for '{title}'")
+            # Load local if available
             try:
                 with open(file_path, "r") as f:
                     article_data = json.load(f)
@@ -137,13 +137,14 @@ def main() -> None:
             score = result["maturity_score"]
 
             # Simple quality estimation mapping
-            if score >= 80:
+            # Adjusted quality estimation mapping
+            if score >= 70:
                 quality = "Featured/GA"
-            elif score >= 60:
+            elif score >= 50:
                 quality = "B-Class"
-            elif score >= 40:
+            elif score >= 30:
                 quality = "C-Class"
-            elif score >= 20:
+            elif score >= 15:
                 quality = "Start"
             else:
                 quality = "Stub"
@@ -151,8 +152,8 @@ def main() -> None:
             print(f"{title:<35} | {score:<10.2f} | {quality:<15}")
 
             # Optional: Print pillar breakdown for debugging
-            # pillar_scores = result["pillar_scores"]
-            # print(f"  > Pillars: {pillar_scores}")
+            pillar_scores = result["pillar_scores"]
+            print(f"  > Pillars: {pillar_scores}")
 
         except Exception as e:
             logger.error(f"Error scoring {title}: {e}")

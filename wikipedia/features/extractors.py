@@ -10,6 +10,7 @@ from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, List
 
 import numpy as np
+import re
 
 
 def structure_features(article_data: Dict[str, Any]) -> Dict[str, float]:
@@ -556,6 +557,8 @@ def _extract_content_text(article_data: Dict[str, Any]) -> str:
 
     if "parse" in data and "text" in data["parse"]:
         content = data["parse"]["text"].get("*", "")
+        # Strip HTML tags
+        content = re.sub(r"<[^>]+>", "", content)
     elif "query" in data and "pages" in data["query"]:
         for page_id, page_data in data["query"]["pages"].items():
             if "extract" in page_data:
