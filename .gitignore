@@ -79,5 +79,6 @@ output/
 
 # Audit data
 audit_data/
-wikipedia/models/*.json
+src/wikipedia/models/*.json
 .wiki_cache/
+*.parquet

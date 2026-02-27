@@ -363,7 +363,11 @@ def main() -> bool:
 
         # Load temporal validation results
         validation_path = (
-            Path(__file__).parent.parent / "reports" / "temporal_validation.json"
+            Path(__file__).parent.parent
+            / "src"
+            / "wikipedia"
+            / "reports"
+            / "temporal_validation.json"
         )
 
         if not validation_path.exists():
@@ -422,13 +426,21 @@ def main() -> bool:
 
         # Save recalibrated weights
         weights_path = (
-            Path(__file__).parent.parent / "models" / "weights_recalibrated.yaml"
+            Path(__file__).parent.parent
+            / "src"
+            / "wikipedia"
+            / "models"
+            / "weights_recalibrated.yaml"
         )
         recalibrator.save_recalibrated_weights(new_weights, str(weights_path))
 
         # Save recalibration report
         report_path = (
-            Path(__file__).parent.parent / "reports" / "baseline_recalibration.json"
+            Path(__file__).parent.parent
+            / "src"
+            / "wikipedia"
+            / "reports"
+            / "baseline_recalibration.json"
         )
 
         recalibration_report = {
@@ -446,7 +458,11 @@ def main() -> bool:
 
         # Generate markdown report
         markdown_path = (
-            Path(__file__).parent.parent / "reports" / "baseline_recalibration.md"
+            Path(__file__).parent.parent
+            / "src"
+            / "wikipedia"
+            / "reports"
+            / "baseline_recalibration.md"
         )
         generate_recalibration_markdown(recalibration_report, markdown_path)
 

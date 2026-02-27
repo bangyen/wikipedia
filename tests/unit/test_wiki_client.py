@@ -85,7 +85,7 @@ class TestWikiClient:
         # Verify API call
         mock_get.assert_called_once()
         call_args = mock_get.call_args
-        assert "Albert Einstein" in str(call_args[1]["params"]["titles"])
+        assert call_args[1]["params"]["titles"] == "Albert Einstein"
 
     @patch("wikipedia.wiki_client.requests.Session.get")
     def test_get_sections(self, mock_get: Mock) -> None:

@@ -123,6 +123,9 @@ addopts = "-ra -q"
 testpaths = [
     "tests",
 ]
+markers = [
+    "integration: integration tests",
+]
 
 [tool.coverage.run]
 source = ["src"]

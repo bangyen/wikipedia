@@ -179,7 +179,11 @@ def main() -> bool:
 
         # Load temporal validation results
         validation_path = (
-            Path(__file__).parent.parent / "reports" / "temporal_validation.json"
+            Path(__file__).parent.parent
+            / "src"
+            / "wikipedia"
+            / "reports"
+            / "temporal_validation.json"
         )
 
         if not validation_path.exists():
@@ -241,7 +245,11 @@ def main() -> bool:
 
         # Save final weights
         weights_path = (
-            Path(__file__).parent.parent / "models" / "weights_temporal_aware.yaml"
+            Path(__file__).parent.parent
+            / "src"
+            / "wikipedia"
+            / "models"
+            / "weights_temporal_aware.yaml"
         )
         with open(weights_path, "w") as f:
             yaml.dump(final_weights, f, default_flow_style=False, indent=2)
@@ -250,7 +258,11 @@ def main() -> bool:
 
         # Save recalibration report
         report_path = (
-            Path(__file__).parent.parent / "reports" / "aggressive_recalibration.json"
+            Path(__file__).parent.parent
+            / "src"
+            / "wikipedia"
+            / "reports"
+            / "aggressive_recalibration.json"
         )
 
         recalibration_report = {
@@ -275,7 +287,11 @@ def main() -> bool:
 
         # Generate markdown report
         markdown_path = (
-            Path(__file__).parent.parent / "reports" / "aggressive_recalibration.md"
+            Path(__file__).parent.parent
+            / "src"
+            / "wikipedia"
+            / "reports"
+            / "aggressive_recalibration.md"
         )
         generate_aggressive_recalibration_markdown(recalibration_report, markdown_path)
 

@@ -426,7 +426,7 @@ def main() -> bool:
     parser.add_argument(
         "--output",
         type=str,
-        default="wikipedia/models/validation_results.json",
+        default="src/wikipedia/models/validation_results.json",
         help="Path to save results",
     )
     args = parser.parse_args()

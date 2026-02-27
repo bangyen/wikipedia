@@ -5,6 +5,8 @@ normalization, scoring, and weight calibration functionality.
 """
 
 import math
+import copy
+from typing import Any
 from unittest.mock import Mock, patch
 
 from wikipedia.models.baseline import HeuristicBaselineModel
@@ -164,6 +166,26 @@ class TestHeuristicBaselineModel:
         # Check pillar scores
         for pillar, score in result["pillar_scores"].items():
             assert 0 <= score <= 100
+
+    def test_maturity_score_invariance(self) -> None:
+        """Test that maturity score increases logically with more content."""
+        # Baseline score
+        base_result = self.model.calculate_maturity_score(self.sample_article_data)
+        base_score = base_result["maturity_score"]
+
+        # Add more sections and text
+        improved_data: Any = copy.deepcopy(self.sample_article_data)
+        improved_data["data"]["parse"]["sections"].append(
+            {"index": 4, "line": "Deep Dive", "level": 2}
+        )
+        improved_data["data"]["parse"]["text"]["*"] += " Bonus content " * 100
+
+        improved_result = self.model.calculate_maturity_score(improved_data)
+        improved_score = improved_result["maturity_score"]
+
+        assert (
+            improved_score > base_score
+        ), f"Score did not increase with more content: {improved_score} vs {base_score}"
 
     def test_get_feature_importance(self) -> None:
         """Test feature importance calculation."""
