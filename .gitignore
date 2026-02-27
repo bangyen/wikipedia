@@ -81,4 +81,6 @@ output/
 audit_data/
 src/wikipedia/models/*.json
 .wiki_cache/
+.test_wiki_cache/
 *.parquet
+*.duckdb
