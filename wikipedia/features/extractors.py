@@ -681,6 +681,40 @@ def _extract_internal_links(article_data: Dict[str, Any]) -> List[Dict[str, Any]
     return internal_links if isinstance(internal_links, list) else []
 
 
+def _extract_categories(article_data: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """Extract categories from article data."""
+    categories = []
+
+    data = article_data.get("data", {})
+
+    if "parse" in data and "categories" in data["parse"]:
+        categories = data["parse"]["categories"]
+    elif "query" in data:
+        # Check if categories is a separate key in query with page IDs
+        if "categories" in data["query"] and isinstance(
+            data["query"]["categories"], dict
+        ):
+            for page_id, page_data in data["query"]["categories"].items():
+                if "categories" in page_data:
+                    categories = page_data["categories"]
+                    break
+        # Otherwise check inside pages
+        elif "pages" in data["query"]:
+            for page_id, page_data in data["query"]["pages"].items():
+                if "categories" in page_data:
+                    categories = page_data["categories"]
+                    break
+
+    return categories if isinstance(categories, list) else []
+
+
+def _extract_category_labels(article_data: Dict[str, Any]) -> List[str]:
+    """Extract category labels (strings) from article data."""
+    categories = _extract_categories(article_data)
+    # Wikipedia API returns categories with "*" as the key for the name
+    return [c.get("*", "").replace("_", " ") for c in categories if "*" in c]
+
+
 def all_features(article_data: Dict[str, Any]) -> Dict[str, float]:
     """Extract all features from Wikipedia article data.
 

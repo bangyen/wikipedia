@@ -9,7 +9,7 @@ Performs 5-fold cross-validation and reports AUC, precision, recall metrics.
 import json
 import pickle
 from pathlib import Path
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Tuple, Optional
 
 import lightgbm as lgb
 import numpy as np
@@ -86,18 +86,24 @@ class WikipediaMaturityClassifier:
         return features
 
     def create_training_dataset(
-        self, sample_size: int = 1000, ga_fa_ratio: float = 0.3
+        self,
+        sample_size: int = 1000,
+        ga_fa_ratio: float = 0.3,
+        positive_category: Optional[str] = None,
+        negative_category: Optional[str] = None,
     ) -> Tuple[pd.DataFrame, np.ndarray]:
-        """Create training dataset with balanced GA/FA vs others labels.
+        """Create training dataset with GA/FA vs others labels.
 
-        This method creates a synthetic training dataset by:
-        1. Fetching sample articles from different quality categories
+        This method creates a training dataset by:
+        1. Fetching sample articles (from categories or hardcoded lists)
         2. Extracting features from each article
-        3. Assigning labels based on article characteristics
+        3. Assigning labels (1 for positive/GA/FA, 0 for negative/others)
 
         Args:
             sample_size: Total number of samples to generate.
             ga_fa_ratio: Ratio of GA/FA articles in the dataset.
+            positive_category: Optional Wikipedia category for positive samples.
+            negative_category: Optional Wikipedia category for negative samples.
 
         Returns:
             Tuple of (features_df, labels_array).
@@ -107,7 +113,7 @@ class WikipediaMaturityClassifier:
 
         client = WikiClient()
 
-        # Define sample articles with known quality characteristics
+        # Define default sample articles if no categories provided
         high_quality_articles = [
             "Albert Einstein",
             "Python (programming language)",
@@ -143,6 +149,15 @@ class WikipediaMaturityClassifier:
             "Psychology",
         ]
 
+        if positive_category:
+            print(f"Fetching positive samples from {positive_category}...")
+            result = client.get_category_members(positive_category, cmlimit=500)
+            cat_members = (
+                result.get("data", {}).get("query", {}).get("categorymembers", [])
+            )
+            high_quality_articles = [m["title"] for m in cat_members if "title" in m]
+            print(f"  Found {len(high_quality_articles)} articles in positive category")
+
         low_quality_articles = [
             "Stub",
             "List of colors",
@@ -155,6 +170,15 @@ class WikipediaMaturityClassifier:
             "Portal:Stubs",
             "Project:Stubs",
         ]
+
+        if negative_category:
+            print(f"Fetching negative samples from {negative_category}...")
+            result = client.get_category_members(negative_category, cmlimit=500)
+            cat_members = (
+                result.get("data", {}).get("query", {}).get("categorymembers", [])
+            )
+            low_quality_articles = [m["title"] for m in cat_members if "title" in m]
+            print(f"  Found {len(low_quality_articles)} articles in negative category")
 
         # Calculate sample sizes
         n_ga_fa = int(sample_size * ga_fa_ratio)

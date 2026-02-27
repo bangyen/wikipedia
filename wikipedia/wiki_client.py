@@ -487,6 +487,98 @@ class WikiClient:
 
         return result  # type: ignore
 
+    def get_categories(
+        self,
+        title: str,
+        format: str = "json",
+        action: str = "query",
+        prop: str = "categories",
+        cllimit: int = 500,
+    ) -> Dict[str, Any]:
+        """Fetch categories for a Wikipedia page.
+
+        Args:
+            title: Page title to fetch categories for
+            format: Response format (default: json)
+            action: API action (default: query)
+            prop: Properties to fetch (default: categories)
+            cllimit: Number of categories to fetch (default: 500)
+
+        Returns:
+            Dictionary containing categories and metadata
+        """
+        cache_key = self._get_cache_key("categories", title=title, cllimit=cllimit)
+
+        params = {
+            "format": format,
+            "action": action,
+            "titles": title,
+            "prop": prop,
+            "cllimit": cllimit,
+        }
+
+        response = self._make_request(self.base_url, params, cache_key)
+
+        result = {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "title": title,
+            "data": response,
+        }
+
+        return result  # type: ignore
+
+    def get_category_members(
+        self,
+        category_name: str,
+        format: str = "json",
+        action: str = "query",
+        list: str = "categorymembers",
+        cmtype: str = "page",
+        cmlimit: int = 500,
+    ) -> Dict[str, Any]:
+        """Fetch pages belonging to a Wikipedia category.
+
+        Args:
+            category_name: Category title (with or without 'Category:' prefix)
+            format: Response format (default: json)
+            action: API action (default: query)
+            list: List type (default: categorymembers)
+            cmtype: Type of members to fetch (default: page)
+            cmlimit: Number of members to fetch (default: 500)
+
+        Returns:
+            Dictionary containing category members and metadata
+        """
+        # Ensure category name has the prefix
+        if not category_name.startswith("Category:"):
+            category_name = f"Category:{category_name}"
+
+        cache_key = self._get_cache_key(
+            "category_members",
+            category_name=category_name,
+            cmtype=cmtype,
+            cmlimit=cmlimit,
+        )
+
+        params = {
+            "format": format,
+            "action": action,
+            "list": list,
+            "cmtitle": category_name,
+            "cmtype": cmtype,
+            "cmlimit": cmlimit,
+        }
+
+        response = self._make_request(self.base_url, params, cache_key)
+
+        result = {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "category": category_name,
+            "data": response,
+        }
+
+        return result  # type: ignore
+
     def clear_cache(self) -> None:
         """Clear the response cache."""
         self._cache.clear()

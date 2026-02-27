@@ -256,6 +256,58 @@ class TestWikiClient:
         assert "data" in result
         assert result["title"] == "Albert Einstein"
 
+    @patch("wikipedia.wiki_client.requests.Session.get")
+    def test_get_categories(self, mock_get: Mock) -> None:
+        """Test get_categories method."""
+        # Mock response
+        mock_response = Mock()
+        mock_response.json.return_value = {
+            "query": {
+                "pages": {
+                    "123": {
+                        "categories": [
+                            {"ns": 14, "title": "Category:Physics"},
+                            {"ns": 14, "title": "Category:German physicists"},
+                        ]
+                    }
+                }
+            }
+        }
+        mock_response.raise_for_status.return_value = None
+        mock_get.return_value = mock_response
+
+        result = self.client.get_categories("Albert Einstein")
+
+        assert "timestamp" in result
+        assert "title" in result
+        assert "data" in result
+        assert result["title"] == "Albert Einstein"
+        assert "categories" in result["data"]["query"]["pages"]["123"]
+
+    @patch("wikipedia.wiki_client.requests.Session.get")
+    def test_get_category_members(self, mock_get: Mock) -> None:
+        """Test get_category_members method."""
+        # Mock response
+        mock_response = Mock()
+        mock_response.json.return_value = {
+            "query": {
+                "categorymembers": [
+                    {"pageid": 1, "ns": 0, "title": "Article 1"},
+                    {"pageid": 2, "ns": 0, "title": "Article 2"},
+                ]
+            }
+        }
+        mock_response.raise_for_status.return_value = None
+        mock_get.return_value = mock_response
+
+        result = self.client.get_category_members("Physics")
+
+        assert "timestamp" in result
+        assert "category" in result
+        assert result["category"] == "Category:Physics"
+        assert "categorymembers" in result["data"]["query"]
+        assert len(result["data"]["query"]["categorymembers"]) == 2
+
     def test_cache_functionality(self) -> None:
         """Test caching functionality."""
         # Clear cache
