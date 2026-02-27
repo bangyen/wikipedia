@@ -18,8 +18,8 @@ def setup_cli() -> bool:
     """
     try:
         # Get project root and CLI script path
-        project_root = Path(__file__).parent
-        cli_script = project_root / "cli" / "wiki_score.py"
+        project_root = Path(__file__).parent.parent
+        cli_script = project_root / "src" / "wikipedia" / "api" / "wiki_score.py"
 
         if not cli_script.exists():
             print(f"Error: CLI script not found at {cli_script}")

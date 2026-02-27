@@ -16,8 +16,8 @@ git clone https://github.com/bangyen/wikipedia.git
 cd wikipedia
 source venv/bin/activate
 pip install -e .
-pytest   # optional: run tests
-python api/api.py
+pytest                 # optional: run tests
+python src/wikipedia/api/api.py   # start the API
 ```
 
 Or use the CLI: `wiki-score "Albert Einstein"`
@@ -40,13 +40,16 @@ Or use the CLI: `wiki-score "Albert Einstein"`
 
 ```plaintext
 wikipedia/
-├── examples/demo.ipynb  # Interactive demo
-├── scripts/             # Validation and setup
-├── tests/               # 69 unit tests
-├── api/                 # FastAPI server + CLI
-├── features/            # Feature extraction
-├── models/              # Baseline model + weights
-└── wiki_client.py       # Wikipedia API client
+├── examples/demo.ipynb       # Interactive demo
+├── scripts/                  # Validation and setup
+├── tests/                    # Unit and integration tests
+├── src/
+│   └── wikipedia/
+│       ├── api/              # FastAPI server + CLI
+│       ├── features/         # Feature extraction
+│       ├── models/           # Baseline model + weights
+│       └── wiki_client.py    # Wikipedia API client
+└── justfile                  # Task runner
 ```
 
 ## Validation

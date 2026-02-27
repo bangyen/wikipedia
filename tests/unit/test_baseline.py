@@ -66,7 +66,7 @@ class TestHeuristicBaselineModel:
         """Test model initialization with default weights."""
         model = HeuristicBaselineModel()
 
-        assert model.weights_file == "wikipedia/models/weights.yaml"
+        assert "weights.yaml" in model.weights_file
         assert "pillars" in model.weights
         assert "features" in model.weights
         # Values from weights.yaml after percentile-based calibration

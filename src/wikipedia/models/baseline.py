@@ -32,7 +32,7 @@ class HeuristicBaselineModel:
         normalization_ranges: Optional[Dict[str, Tuple[float, float]]] = None,
     ) -> None:
         """Initialize the heuristic baseline model."""
-        self.weights_file = weights_file or "wikipedia/models/weights.yaml"
+        self.weights_file = weights_file or str(Path(__file__).parent / "weights.yaml")
         self.normalization_ranges: Dict[str, Tuple[float, float]] = (
             normalization_ranges or self._get_default_normalization_ranges()
         )

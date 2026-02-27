@@ -37,15 +37,9 @@ test:
 all: fmt lint type test
     echo "All checks completed!"
 
-# start Flask dashboard
+# start FastAPI server (dashboard)
 dashboard:
-    #!/usr/bin/env bash
-    if command -v uv >/dev/null 2>&1; then
-        uv sync --extra ui
-    fi
-    echo "Starting dashboard..."
-    echo "Dashboard will be available at http://localhost:5000"
-    {{PYTHON}} ui/app.py
+    {{PYTHON}} src/wikipedia/api/api.py
 
 # run regression audit
 audit:
