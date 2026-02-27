@@ -149,63 +149,63 @@ def _compute_centrality_metrics(graph: nx.DiGraph, title: str) -> Dict[str, floa
     Returns:
         Dictionary of centrality metrics
     """
-    features = {}
-
-    if title not in graph.nodes():
+    n_nodes = graph.number_of_nodes()
+    if n_nodes == 0 or title not in graph.nodes():
         return _get_zero_centrality_features()
 
+    features = _get_zero_centrality_features()
+
+    # PageRank centrality
+    if n_nodes > 1:
+        try:
+            pagerank = nx.pagerank(graph, alpha=0.85, max_iter=100, tol=1e-06)
+            pr_value = pagerank.get(title)
+            if pr_value is not None:
+                features["pagerank_score"] = float(pr_value)
+            else:
+                features["pagerank_score"] = 1.0 / n_nodes
+        except (nx.PowerIterationFailedConvergence, ZeroDivisionError, Exception):
+            # Fallback to uniform distribution if PageRank fails
+            features["pagerank_score"] = 1.0 / n_nodes
+    else:
+        features["pagerank_score"] = 1.0
+
+    # Degree centrality
     try:
-        # PageRank centrality
-        if graph.number_of_nodes() > 1:
-            try:
-                pagerank = nx.pagerank(graph, alpha=0.85, max_iter=100, tol=1e-06)
-                pr_value = pagerank.get(title, 0.0)
-                # Ensure we have a valid numeric value
-                features["pagerank_score"] = (
-                    float(pr_value) if pr_value is not None else 0.0
-                )
-            except (nx.PowerIterationFailedConvergence, ZeroDivisionError):
-                # Fallback to uniform distribution if PageRank fails
-                features["pagerank_score"] = 1.0 / graph.number_of_nodes()
-        else:
-            features["pagerank_score"] = 1.0 if graph.number_of_nodes() == 1 else 0.0
-
-        # Degree centrality
         degree_centrality = nx.degree_centrality(graph)
-        dc_value = degree_centrality.get(title, 0.0)
-        features["degree_centrality"] = float(dc_value) if dc_value is not None else 0.0
-
-        # Betweenness centrality (only for connected components)
-        if graph.number_of_nodes() > 1:
-            try:
-                betweenness = nx.betweenness_centrality(
-                    graph, k=min(100, graph.number_of_nodes())
-                )
-                features["betweenness_centrality"] = float(betweenness.get(title, 0.0))
-            except nx.NetworkXError:
-                features["betweenness_centrality"] = 0.0
+        dc_value = degree_centrality.get(title)
+        if dc_value is not None:
+            features["degree_centrality"] = float(dc_value)
         else:
+            features["degree_centrality"] = 1.0 / n_nodes if n_nodes > 0 else 0.0
+    except Exception:
+        features["degree_centrality"] = 0.0
+
+    # Betweenness centrality (only for connected components)
+    if n_nodes > 1:
+        try:
+            betweenness = nx.betweenness_centrality(graph, k=min(100, n_nodes))
+            features["betweenness_centrality"] = float(betweenness.get(title, 0.0))
+        except Exception:
             features["betweenness_centrality"] = 0.0
 
-        # Closeness centrality (only for connected components)
-        if graph.number_of_nodes() > 1:
-            try:
-                closeness = nx.closeness_centrality(graph)
-                features["closeness_centrality"] = float(closeness.get(title, 0.0))
-            except nx.NetworkXError:
-                features["closeness_centrality"] = 0.0
-        else:
+    # Closeness centrality (only for connected components)
+    if n_nodes > 1:
+        try:
+            closeness = nx.closeness_centrality(graph)
+            features["closeness_centrality"] = float(closeness.get(title, 0.0))
+        except Exception:
             features["closeness_centrality"] = 0.0
 
-        # Eigenvector centrality
+    # Eigenvector centrality
+    if n_nodes > 1:
         try:
             eigenvector = nx.eigenvector_centrality(graph, max_iter=1000)
             features["eigenvector_centrality"] = float(eigenvector.get(title, 0.0))
-        except (nx.NetworkXError, nx.PowerIterationFailedConvergence):
+        except Exception:
             features["eigenvector_centrality"] = 0.0
-
-    except Exception:
-        return _get_zero_centrality_features()
+    else:
+        features["eigenvector_centrality"] = 1.0 if n_nodes == 1 else 0.0
 
     return features
 
