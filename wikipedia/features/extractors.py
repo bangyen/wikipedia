@@ -13,7 +13,17 @@ if TYPE_CHECKING:
     from wikipedia.features.graph_processor import GraphProcessor
 
 import numpy as np
-import re
+
+from wikipedia.utils.data_utils import (
+    extract_sections,
+    extract_content_text,
+    extract_templates,
+    extract_citations,
+    extract_revisions,
+    extract_backlinks,
+    extract_internal_links,
+    extract_categories,
+)
 
 
 def structure_features(article_data: Dict[str, Any]) -> Dict[str, float]:
@@ -42,9 +52,9 @@ def structure_features(article_data: Dict[str, Any]) -> Dict[str, float]:
     features = {}
 
     # Extract sections data
-    sections = _extract_sections(article_data)
-    content_text = _extract_content_text(article_data)
-    templates = _extract_templates(article_data)
+    sections = extract_sections(article_data)
+    content_text = extract_content_text(article_data)
+    templates = extract_templates(article_data)
 
     # Basic counts
     features["section_count"] = float(len(sections))
@@ -130,9 +140,9 @@ def sourcing_features(article_data: Dict[str, Any]) -> Dict[str, float]:
     features = {}
 
     # Extract data
-    citations = _extract_citations(article_data)
-    external_links = _extract_external_links(article_data)
-    content_text = _extract_content_text(article_data)
+    citations = extract_citations(article_data)
+    external_links = extract_citations(article_data)
+    content_text = extract_content_text(article_data)
 
     # Basic counts
     features["citation_count"] = float(len(citations))
@@ -284,7 +294,7 @@ def editorial_features(article_data: Dict[str, Any]) -> Dict[str, float]:
     features = {}
 
     # Extract revisions data
-    revisions = _extract_revisions(article_data)
+    revisions = extract_revisions(article_data)
 
     if not revisions:
         # Return zero values if no revisions
@@ -466,10 +476,10 @@ def network_features(article_data: Dict[str, Any]) -> Dict[str, float]:
     features = {}
 
     # Extract link data
-    backlinks = _extract_backlinks(article_data)
-    internal_links = _extract_internal_links(article_data)
-    external_links = _extract_external_links(article_data)
-    content_text = _extract_content_text(article_data)
+    backlinks = extract_backlinks(article_data)
+    internal_links = extract_internal_links(article_data)
+    external_links = extract_citations(article_data)
+    content_text = extract_content_text(article_data)
 
     # Basic counts
     features["inbound_links"] = float(len(backlinks))
@@ -542,194 +552,9 @@ def network_features(article_data: Dict[str, Any]) -> Dict[str, float]:
     return features
 
 
-# Helper functions for data extraction
-
-
-def _extract_sections(article_data: Dict[str, Any]) -> List[Dict[str, Any]]:
-    """Extract sections from article data."""
-    sections = []
-
-    # Try different possible paths for sections data
-    data = article_data.get("data", {})
-
-    if "parse" in data and "sections" in data["parse"]:
-        sections = data["parse"]["sections"]
-    elif "query" in data:
-        # Check if sections is directly in query
-        if "sections" in data["query"] and isinstance(data["query"]["sections"], list):
-            sections = data["query"]["sections"]
-        # Otherwise check inside pages
-        elif "pages" in data["query"]:
-            for page_id, page_data in data["query"]["pages"].items():
-                if "sections" in page_data:
-                    sections = page_data["sections"]
-                    break
-
-    return sections if isinstance(sections, list) else []
-
-
-def _extract_content_text(article_data: Dict[str, Any]) -> str:
-    """Extract content text from article data."""
-    content = ""
-
-    data = article_data.get("data", {})
-
-    if "parse" in data and "text" in data["parse"]:
-        content = data["parse"]["text"].get("*", "")
-        # Strip HTML tags
-        content = re.sub(r"<[^>]+>", "", content)
-    elif "query" in data and "pages" in data["query"]:
-        for page_id, page_data in data["query"]["pages"].items():
-            if "extract" in page_data:
-                content = page_data["extract"]
-                break
-
-    return content if isinstance(content, str) else ""
-
-
-def _extract_templates(article_data: Dict[str, Any]) -> List[Dict[str, Any]]:
-    """Extract templates from article data."""
-    templates = []
-
-    data = article_data.get("data", {})
-
-    if "query" in data:
-        # Check if templates is a separate key in query with page IDs
-        if "templates" in data["query"] and isinstance(
-            data["query"]["templates"], dict
-        ):
-            for page_id, page_data in data["query"]["templates"].items():
-                if "templates" in page_data:
-                    templates = page_data["templates"]
-                    break
-        # Otherwise check inside pages
-        elif "pages" in data["query"]:
-            for page_id, page_data in data["query"]["pages"].items():
-                if "templates" in page_data:
-                    templates = page_data["templates"]
-                    break
-
-    return templates if isinstance(templates, list) else []
-
-
-def _extract_citations(article_data: Dict[str, Any]) -> List[Dict[str, Any]]:
-    """Extract citations from article data."""
-    citations = []
-
-    data = article_data.get("data", {})
-
-    if "query" in data:
-        # Check if extlinks is a separate key in query with page IDs
-        if "extlinks" in data["query"] and isinstance(data["query"]["extlinks"], dict):
-            for page_id, page_data in data["query"]["extlinks"].items():
-                if "extlinks" in page_data:
-                    citations = page_data["extlinks"]
-                    break
-        # Otherwise check inside pages
-        elif "pages" in data["query"]:
-            for page_id, page_data in data["query"]["pages"].items():
-                if "extlinks" in page_data:
-                    citations = page_data["extlinks"]
-                    break
-
-    return citations if isinstance(citations, list) else []
-
-
-def _extract_external_links(article_data: Dict[str, Any]) -> List[Dict[str, Any]]:
-    """Extract external links from article data."""
-    return _extract_citations(article_data)  # Same as citations
-
-
-def _extract_revisions(article_data: Dict[str, Any]) -> List[Dict[str, Any]]:
-    """Extract revisions from article data."""
-    revisions = []
-
-    data = article_data.get("data", {})
-
-    if "query" in data:
-        # Check if revisions is a separate key in query with page IDs
-        if "revisions" in data["query"] and isinstance(
-            data["query"]["revisions"], dict
-        ):
-            for page_id, page_data in data["query"]["revisions"].items():
-                if "revisions" in page_data:
-                    revisions = page_data["revisions"]
-                    break
-        # Otherwise check inside pages
-        elif "pages" in data["query"]:
-            for page_id, page_data in data["query"]["pages"].items():
-                if "revisions" in page_data:
-                    revisions = page_data["revisions"]
-                    break
-
-    return revisions if isinstance(revisions, list) else []
-
-
-def _extract_backlinks(article_data: Dict[str, Any]) -> List[Dict[str, Any]]:
-    """Extract backlinks from article data."""
-    backlinks = []
-
-    data = article_data.get("data", {})
-
-    if "query" in data and "backlinks" in data["query"]:
-        backlinks = data["query"]["backlinks"]
-
-    return backlinks if isinstance(backlinks, list) else []
-
-
-def _extract_internal_links(article_data: Dict[str, Any]) -> List[Dict[str, Any]]:
-    """Extract internal links from article data."""
-    internal_links = []
-
-    data = article_data.get("data", {})
-
-    if "query" in data:
-        # Check if links is a separate key in query with page IDs
-        if "links" in data["query"] and isinstance(data["query"]["links"], dict):
-            for page_id, page_data in data["query"]["links"].items():
-                if "links" in page_data:
-                    internal_links = page_data["links"]
-                    break
-        # Otherwise check inside pages
-        elif "pages" in data["query"]:
-            for page_id, page_data in data["query"]["pages"].items():
-                if "links" in page_data:
-                    internal_links = page_data["links"]
-                    break
-
-    return internal_links if isinstance(internal_links, list) else []
-
-
-def _extract_categories(article_data: Dict[str, Any]) -> List[Dict[str, Any]]:
-    """Extract categories from article data."""
-    categories = []
-
-    data = article_data.get("data", {})
-
-    if "parse" in data and "categories" in data["parse"]:
-        categories = data["parse"]["categories"]
-    elif "query" in data:
-        # Check if categories is a separate key in query with page IDs
-        if "categories" in data["query"] and isinstance(
-            data["query"]["categories"], dict
-        ):
-            for page_id, page_data in data["query"]["categories"].items():
-                if "categories" in page_data:
-                    categories = page_data["categories"]
-                    break
-        # Otherwise check inside pages
-        elif "pages" in data["query"]:
-            for page_id, page_data in data["query"]["pages"].items():
-                if "categories" in page_data:
-                    categories = page_data["categories"]
-                    break
-
-    return categories if isinstance(categories, list) else []
-
-
 def _extract_category_labels(article_data: Dict[str, Any]) -> List[str]:
     """Extract category labels (strings) from article data."""
-    categories = _extract_categories(article_data)
+    categories = extract_categories(article_data)
     # Wikipedia API returns categories with "*" as the key for the name
     return [c.get("*", "").replace("_", " ") for c in categories if "*" in c]
 

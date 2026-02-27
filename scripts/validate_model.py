@@ -9,7 +9,7 @@ import argparse
 import json
 import math
 from pathlib import Path
-from typing import Any, Dict, List, Tuple, Union, Optional, TYPE_CHECKING
+from typing import Any, Dict, List, Tuple, Union
 
 import numpy as np
 import requests  # type: ignore
@@ -18,9 +18,6 @@ from tqdm import tqdm
 from wikipedia.models.baseline import HeuristicBaselineModel
 from wikipedia.wiki_client import WikiClient
 
-if TYPE_CHECKING:
-    from wikipedia.features.graph_processor import GraphProcessor
-
 
 class ModelValidator:
     """Validates heuristic baseline model against ORES articlequality scores."""
@@ -28,17 +25,14 @@ class ModelValidator:
     def __init__(
         self,
         model: HeuristicBaselineModel,
-        graph_processor: Optional["GraphProcessor"] = None,
     ) -> None:
         """Initialize the validator.
 
         Args:
             model: Heuristic baseline model to validate.
-            graph_processor: Optional pre-computed graph metrics.
         """
         self.model = model
         self.client = WikiClient()
-        self.graph_processor = graph_processor
 
     def fetch_ores_scores(self, titles: List[str]) -> Dict[str, str]:
         """Fetch ORES articlequality scores for given titles.
@@ -305,9 +299,7 @@ class ModelValidator:
 
         for article_data, target_score in tqdm(validation_data, desc="Validating"):
             try:
-                result = self.model.calculate_maturity_score(
-                    article_data, graph_processor=self.graph_processor
-                )
+                result = self.model.calculate_maturity_score(article_data)
                 predicted_scores.append(result["maturity_score"])
                 target_scores.append(target_score)
 
@@ -383,14 +375,12 @@ class ModelValidator:
         ):
             try:
                 # Get feature importance for this article
-                importance = self.model.get_feature_importance(
-                    article_data, graph_processor=self.graph_processor
-                )
+                importance = self.model.get_feature_importance(article_data)
 
-                # Extract raw features
-                raw_features = self.model.extract_features(
-                    article_data, graph_processor=self.graph_processor
-                )
+                # Extract raw features using the models' internal logic (extractors.all_features)
+                from wikipedia.features.extractors import all_features
+
+                raw_features = all_features(article_data)
 
                 # Calculate correlations
                 for feature_name, value in raw_features.items():
@@ -457,30 +447,11 @@ def main() -> bool:
         f"Starting validation of heuristic baseline model with {args.num_articles} articles..."
     )
 
-    # Initialize graph processor if dumps exist
-    from wikipedia.features.graph_processor import GraphProcessor
-
-    graph_processor = None
-    try:
-        # Check if graph exists
-        graph_processor = GraphProcessor()
-        if not graph_processor.has_data:
-            print(
-                "Warning: Graph processor initialized but no graph data found. Global metrics will be skipped."
-            )
-            graph_processor = None
-        else:
-            print("Successfully initialized global graph processor.")
-    except Exception as e:
-        print(
-            f"Graph processor could not be initialized: {e}. Skipping global metrics."
-        )
-
     # Initialize model
     model = HeuristicBaselineModel()
 
     # Initialize validator
-    validator = ModelValidator(model, graph_processor=graph_processor)
+    validator = ModelValidator(model)
 
     # Fetch validation data
     validation_data = validator.fetch_validation_data(num_articles=args.num_articles)

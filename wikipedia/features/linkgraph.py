@@ -12,6 +12,10 @@ from typing import Any, Dict, List, Optional
 import networkx as nx
 
 from wikipedia.features.graph_processor import GraphProcessor
+from wikipedia.utils.data_utils import (
+    extract_backlinks,
+    extract_internal_links,
+)
 
 
 def linkgraph_features(
@@ -44,8 +48,8 @@ def linkgraph_features(
     features = {}
 
     # Extract link data
-    backlinks = _extract_backlinks(article_data)
-    internal_links = _extract_internal_links(article_data)
+    backlinks = extract_backlinks(article_data)
+    internal_links = extract_internal_links(article_data)
 
     # If graph_processor is provided, check for pre-computed global metrics
     if graph_processor:
@@ -454,15 +458,16 @@ def _compute_advanced_metrics(graph: nx.DiGraph, title: str) -> Dict[str, float]
         features["log_degree_centrality"] = math.log(
             max(features.get("degree_centrality", 0), 1e-10)
         )
+        return features
 
     except Exception:
-        features["graph_density"] = 0.0
-        features["assortativity"] = 0.0
-        features["small_world_coefficient"] = 0.0
-        features["log_pagerank_score"] = 0.0
-        features["log_degree_centrality"] = 0.0
-
-    return features
+        return {
+            "graph_density": 0.0,
+            "assortativity": 0.0,
+            "small_world_coefficient": 0.0,
+            "log_pagerank_score": 0.0,
+            "log_degree_centrality": 0.0,
+        }
 
 
 def _get_zero_linkgraph_features() -> Dict[str, float]:
@@ -509,33 +514,3 @@ def _get_zero_structural_features() -> Dict[str, float]:
         "structural_holes": 0.0,
         "core_periphery_score": 0.0,
     }
-
-
-# Helper functions for data extraction (reused from extractors.py)
-
-
-def _extract_backlinks(article_data: Dict[str, Any]) -> List[Dict[str, Any]]:
-    """Extract backlinks from article data."""
-    backlinks = []
-
-    data = article_data.get("data", {})
-
-    if "query" in data and "backlinks" in data["query"]:
-        backlinks = data["query"]["backlinks"]
-
-    return backlinks if isinstance(backlinks, list) else []
-
-
-def _extract_internal_links(article_data: Dict[str, Any]) -> List[Dict[str, Any]]:
-    """Extract internal links from article data."""
-    internal_links = []
-
-    data = article_data.get("data", {})
-
-    if "query" in data and "pages" in data["query"]:
-        for page_id, page_data in data["query"]["pages"].items():
-            if "links" in page_data:
-                internal_links = page_data["links"]
-                break
-
-    return internal_links if isinstance(internal_links, list) else []

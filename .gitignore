@@ -79,3 +79,5 @@ output/
 
 # Audit data
 audit_data/
+wikipedia/models/*.json
+.wiki_cache/

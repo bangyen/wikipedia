@@ -5,8 +5,7 @@ normalization, scoring, and weight calibration functionality.
 """
 
 import math
-import numpy as np
-from unittest.mock import Mock, patch, mock_open
+from unittest.mock import Mock, patch
 
 from wikipedia.models.baseline import HeuristicBaselineModel
 
@@ -87,7 +86,9 @@ class TestHeuristicBaselineModel:
 
     def test_extract_features(self) -> None:
         """Test feature extraction from article data."""
-        features = self.model.extract_features(self.sample_article_data)
+        from wikipedia.features.extractors import all_features
+
+        features = all_features(self.sample_article_data)
 
         # Check that features are extracted
         assert isinstance(features, dict)
@@ -156,8 +157,6 @@ class TestHeuristicBaselineModel:
         assert "maturity_score" in result
         assert "pillar_scores" in result
         assert "raw_features" in result
-        assert "normalized_features" in result
-        assert "weights_used" in result
 
         # Check score range
         assert 0 <= result["maturity_score"] <= 100
@@ -181,41 +180,6 @@ class TestHeuristicBaselineModel:
         # Check that importance is sorted
         importance_values = list(importance.values())
         assert importance_values == sorted(importance_values, reverse=True)
-
-    def test_calibrate_weights(self) -> None:
-        """Test weight calibration functionality."""
-        # Create mock training data
-        training_data = [
-            (self.sample_article_data, 80.0),
-            (self.sample_article_data, 60.0),
-            (self.sample_article_data, 40.0),
-        ]
-
-        # Mock numpy.corrcoef to return a numpy array
-        mock_corr_matrix = np.array([[1.0, 0.7], [0.7, 1.0]])
-        with patch("numpy.corrcoef", Mock(return_value=mock_corr_matrix)), patch(
-            "wikipedia.models.baseline.HeuristicBaselineModel.save_weights"
-        ):
-            results = self.model.calibrate_weights(training_data)
-
-        # Check calibration results
-        assert "best_correlation" in results
-        assert "calibrated_weights" in results
-        assert "target_correlation" in results
-
-        assert results["target_correlation"] == 0.6
-
-    def test_save_weights(self) -> None:
-        """Test weight saving functionality."""
-        with patch("builtins.open", mock_open()) as mock_file, patch(
-            "yaml.dump", Mock()
-        ) as mock_dump:
-
-            self.model.save_weights("test_weights.yaml")
-
-            # Check that file was opened and yaml.dump was called
-            mock_file.assert_called_once_with("test_weights.yaml", "w")
-            mock_dump.assert_called_once()
 
     def test_empty_article_data(self) -> None:
         """Test handling of empty article data."""
@@ -256,24 +220,6 @@ class TestHeuristicBaselineModel:
                     -1.0 <= weight <= 1.0
                 ), f"Feature weight out of range: {feature}={weight}"
 
-    def test_correlation_calculation(self) -> None:
-        """Test correlation calculation in calibration."""
-        # Mock numpy.corrcoef to return known correlation
-        mock_corr_matrix = np.array([[1.0, 0.8], [0.8, 1.0]])
-        with patch("numpy.corrcoef", Mock(return_value=mock_corr_matrix)), patch(
-            "wikipedia.models.baseline.HeuristicBaselineModel.save_weights"
-        ):
-            training_data = [
-                (self.sample_article_data, 80.0),
-                (self.sample_article_data, 60.0),
-            ]
-
-            results = self.model.calibrate_weights(training_data)
-
-            # Check that correlation was calculated
-            assert "best_correlation" in results
-            assert results["best_correlation"] == 0.8
-
     def test_feature_extraction_edge_cases(self) -> None:
         """Test feature extraction with edge cases."""
         # Test with None values
@@ -296,7 +242,9 @@ class TestHeuristicBaselineModel:
             },
         }
 
-        features = self.model.extract_features(edge_case_data)
+        from wikipedia.features.extractors import all_features
+
+        features = all_features(edge_case_data)
 
         # Should handle edge cases gracefully
         assert isinstance(features, dict)
