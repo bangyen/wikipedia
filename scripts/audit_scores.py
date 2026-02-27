@@ -11,7 +11,7 @@ import logging
 
 import sys
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -57,33 +57,33 @@ def fetch_full_article_data(client: WikiClient, title: str) -> Dict[str, Any]:
     full_data: Dict[str, Any] = {"query": {}, "parse": {}}
 
     # Helper to merge response data
-    def merge(response: Dict[str, Any]) -> None:
-        data = response.get("data", {})
-        deep_update(full_data, data)
+    def merge(data: Any, key: Optional[str] = None) -> None:
+        if isinstance(data, list):
+            full_data["query"][key] = data
+        elif isinstance(data, dict):
+            deep_update(full_data, data)
 
     try:
         # 1. Full Page Data (actions=parse) - gets text, sections, categories
-        merge(client.parse_page(title))
+        full_data["parse"] = client.parse_page(title)
 
         # 2. Page Content metadata - action=query
         merge(client.get_page_content(title))
 
         # 3. Templates - action=query
-        merge(client.get_templates(title))
+        merge(client.get_templates(title), "templates")
 
         # 4. Revisions - action=query
-        merge(
-            client.get_revisions(title, rvlimit=500)
-        )  # Get more revisions for better stats
+        merge(client.get_revisions(title, limit=500), "revisions")
 
         # 5. Citations (Extlinks) - action=query
-        merge(client.get_citations(title, ellimit=500))
+        merge(client.get_citations(title, limit=500), "extlinks")
 
         # 6. Internal Links - action=query
-        merge(client.get_links(title, pllimit=500))
+        merge(client.get_links(title, limit=500), "links")
 
         # 7. Backlinks - action=query
-        merge(client.get_backlinks(title, bllimit=500))
+        merge(client.get_backlinks(title, limit=500), "backlinks")
 
         # 8. Pageviews (optional, usually separate)
         # Not strictly needed for current baseline features, skipping to save time/complexity

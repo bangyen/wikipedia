@@ -76,43 +76,37 @@ def fetch_article_data(title: str) -> Optional[Dict[str, Any]]:
         Article data dictionary or None if not found
     """
     try:
-        # Fetch comprehensive article data
+        # Fetch comprehensive article data using the simplified WikiClient interface
         page_content = wiki_client.get_page_content(title)
         sections = wiki_client.get_sections(title)
         templates = wiki_client.get_templates(title)
-        revisions = wiki_client.get_revisions(title, rvlimit=20)
-        backlinks = wiki_client.get_backlinks(title, bllimit=50)
-        citations = wiki_client.get_citations(title, ellimit=50)
+        revisions = wiki_client.get_revisions(title, limit=20)
+        backlinks = wiki_client.get_backlinks(title, limit=50)
+        citations = wiki_client.get_citations(title, limit=50)
 
-        # Combine data into expected format
+        # Combine data into expected format for the model
+        # Note: The model expects a specific nested structure which we maintain here
+        # for compatibility, but we access the flattened results from WikiClient.
         article_data = {
             "title": title,
             "data": {
-                "parse": page_content.get("data", {}).get("parse", {}),
+                "parse": page_content,
                 "query": {
-                    "pages": page_content.get("data", {})
-                    .get("query", {})
-                    .get("pages", {}),
-                    "sections": sections.get("data", {})
-                    .get("parse", {})
-                    .get("sections", []),
-                    "templates": templates.get("data", {})
-                    .get("query", {})
-                    .get("pages", {}),
-                    "revisions": revisions.get("data", {})
-                    .get("query", {})
-                    .get("pages", {}),
-                    "backlinks": backlinks.get("data", {})
-                    .get("query", {})
-                    .get("backlinks", []),
-                    "extlinks": citations.get("data", {})
-                    .get("query", {})
-                    .get("pages", {}),
+                    "pages": page_content,  # Historical quirk: content often placed here
+                    "sections": sections,
+                    "templates": templates,
+                    "revisions": revisions,
+                    "backlinks": backlinks,
+                    "extlinks": citations,
                 },
             },
         }
 
         return article_data
+
+    except Exception as e:
+        print(f"Error fetching data for {title}: {e}")
+        return None
 
     except Exception as e:
         print(f"Error fetching data for {title}: {e}")

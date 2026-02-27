@@ -237,34 +237,22 @@ class ModelValidator:
             page_content = self.client.get_page_content(title)
             sections = self.client.get_sections(title)
             templates = self.client.get_templates(title)
-            revisions = self.client.get_revisions(title, rvlimit=50)
-            backlinks = self.client.get_backlinks(title, bllimit=100)
-            citations = self.client.get_citations(title, ellimit=100)
+            revisions = self.client.get_revisions(title, limit=50)
+            backlinks = self.client.get_backlinks(title, limit=100)
+            citations = self.client.get_citations(title, limit=100)
 
             # Combine all data
             comprehensive_data = {
                 "title": title,
                 "data": {
-                    "parse": page_content.get("data", {}).get("parse", {}),
+                    "parse": page_content,
                     "query": {
-                        "pages": page_content.get("data", {})
-                        .get("query", {})
-                        .get("pages", {}),
-                        "sections": sections.get("data", {})
-                        .get("parse", {})
-                        .get("sections", []),
-                        "templates": templates.get("data", {})
-                        .get("query", {})
-                        .get("pages", {}),
-                        "revisions": revisions.get("data", {})
-                        .get("query", {})
-                        .get("pages", {}),
-                        "backlinks": backlinks.get("data", {})
-                        .get("query", {})
-                        .get("backlinks", []),
-                        "extlinks": citations.get("data", {})
-                        .get("query", {})
-                        .get("pages", {}),
+                        "pages": {page_content.get("pageid", "0"): page_content},
+                        "sections": sections,
+                        "templates": templates,
+                        "revisions": revisions,
+                        "backlinks": backlinks,
+                        "extlinks": citations,
                     },
                 },
             }

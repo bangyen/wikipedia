@@ -29,33 +29,21 @@ def fetch_article_data(client: WikiClient, title: str) -> Optional[Dict[str, Any
         page_content = client.get_page_content(title)
         sections = client.get_sections(title)
         templates = client.get_templates(title)
-        revisions = client.get_revisions(title, rvlimit=20)
-        backlinks = client.get_backlinks(title, bllimit=50)
-        citations = client.get_citations(title, ellimit=50)
+        revisions = client.get_revisions(title, limit=20)
+        backlinks = client.get_backlinks(title, limit=50)
+        citations = client.get_citations(title, limit=50)
 
         return {
             "title": title,
             "data": {
-                "parse": page_content.get("data", {}).get("parse", {}),
+                "parse": page_content,
                 "query": {
-                    "pages": page_content.get("data", {})
-                    .get("query", {})
-                    .get("pages", {}),
-                    "sections": sections.get("data", {})
-                    .get("parse", {})
-                    .get("sections", []),
-                    "templates": templates.get("data", {})
-                    .get("query", {})
-                    .get("pages", {}),
-                    "revisions": revisions.get("data", {})
-                    .get("query", {})
-                    .get("pages", {}),
-                    "backlinks": backlinks.get("data", {})
-                    .get("query", {})
-                    .get("backlinks", []),
-                    "extlinks": citations.get("data", {})
-                    .get("query", {})
-                    .get("pages", {}),
+                    "pages": {page_content.get("pageid", "0"): page_content},
+                    "sections": sections,
+                    "templates": templates,
+                    "revisions": revisions,
+                    "backlinks": backlinks,
+                    "extlinks": citations,
                 },
             },
         }

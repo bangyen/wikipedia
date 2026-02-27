@@ -9,7 +9,7 @@ import json
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, Optional, cast
+from typing import Any, Dict, List, Optional, cast
 from urllib.parse import quote
 
 import requests  # type: ignore
@@ -169,9 +169,6 @@ class WikiClient:
     def get_page_content(
         self,
         title: str,
-        format: str = "json",
-        action: str = "query",
-        prop: str = "extracts",
         exintro: bool = False,
         explaintext: bool = True,
     ) -> Dict[str, Any]:
@@ -179,9 +176,6 @@ class WikiClient:
 
         Args:
             title: Page title to fetch
-            format: Response format (default: json)
-            action: API action (default: query)
-            prop: Properties to fetch (default: extracts)
             exintro: Only extract introduction (default: False)
             explaintext: Return plain text (default: True)
 
@@ -191,9 +185,9 @@ class WikiClient:
         cache_key = self._get_cache_key("page_content", title=title, exintro=exintro)
 
         params = {
-            "format": format,
-            "action": action,
-            "prop": prop,
+            "format": "json",
+            "action": "query",
+            "prop": "extracts",
             "titles": title,
             "exintro": exintro,
             "explaintext": explaintext,
@@ -201,48 +195,41 @@ class WikiClient:
 
         response = self._make_request(self.base_url, params, cache_key)
 
-        # Add timestamp and metadata
-        result = {
+        # Extract the page content from the response
+        pages = response.get("query", {}).get("pages", {})
+        page_content = next(iter(pages.values())) if pages else {}
+
+        return {
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "title": title,
-            "data": response,
+            **page_content,
         }
-
-        return result  # type: ignore
 
     def get_sections(
         self,
         title: str,
-        format: str = "json",
-        action: str = "parse",
-        prop: str = "sections",
-    ) -> Dict[str, Any]:
+    ) -> List[Dict[str, Any]]:
         """Fetch page sections from Wikipedia.
 
         Args:
             title: Page title to fetch sections for
-            format: Response format (default: json)
-            action: API action (default: parse)
-            prop: Properties to fetch (default: sections)
 
         Returns:
-            Dictionary containing page sections and metadata
+            List of dictionaries containing page sections
         """
-        return self.parse_page(title, format=format, action=action, prop=prop)
+        parsed = self.parse_page(title, prop="sections")
+        sections = parsed.get("sections", [])
+        return sections if isinstance(sections, list) else []
 
     def parse_page(
         self,
         title: str,
-        format: str = "json",
-        action: str = "parse",
         prop: str = "text|sections|templates|categories|images|externallinks",
     ) -> Dict[str, Any]:
         """Fetch full parsed page data from Wikipedia.
 
         Args:
             title: Page title to parse
-            format: Response format (default: json)
-            action: API action (default: parse)
             prop: Properties to fetch (text, sections, templates, etc.)
 
         Returns:
@@ -251,150 +238,113 @@ class WikiClient:
         cache_key = self._get_cache_key("parse", title=title, prop=prop)
 
         params = {
-            "format": format,
-            "action": action,
+            "format": "json",
+            "action": "parse",
             "page": title,
             "prop": prop,
         }
 
         response = self._make_request(self.base_url, params, cache_key)
+        parsed_data = response.get("parse", {})
 
-        result = {
+        return {
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "title": title,
-            "data": response,
+            **parsed_data,
         }
-
-        return result  # type: ignore
 
     def get_templates(
         self,
         title: str,
-        format: str = "json",
-        action: str = "query",
-        prop: str = "templates",
-        tlnamespace: int = 10,
-        tllimit: int = 500,
-    ) -> Dict[str, Any]:
+        limit: int = 500,
+    ) -> List[Dict[str, Any]]:
         """Fetch templates used in a Wikipedia page.
 
         Args:
             title: Page title to fetch templates for
-            format: Response format (default: json)
-            action: API action (default: query)
-            prop: Properties to fetch (default: templates)
-            tlnamespace: Template namespace (default: 10)
-            tllimit: Maximum number of templates to return (default: 500)
+            limit: Number of templates to fetch (default: 500)
 
         Returns:
-            Dictionary containing page templates and metadata
+            List of dictionaries containing templates
         """
-        cache_key = self._get_cache_key("templates", title=title, tllimit=tllimit)
+        cache_key = self._get_cache_key("templates", title=title, limit=limit)
 
         params = {
-            "format": format,
-            "action": action,
+            "format": "json",
+            "action": "query",
             "titles": title,
-            "prop": prop,
-            "tlnamespace": tlnamespace,
-            "tllimit": tllimit,
+            "prop": "templates",
+            "tlnamespace": 10,
+            "tllimit": limit,
         }
 
         response = self._make_request(self.base_url, params, cache_key)
 
-        result = {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "title": title,
-            "data": response,
-        }
-
-        return result  # type: ignore
+        pages = response.get("query", {}).get("pages", {})
+        page = next(iter(pages.values())) if pages else {}
+        templates = page.get("templates", [])
+        return templates if isinstance(templates, list) else []
 
     def get_revisions(
         self,
         title: str,
-        format: str = "json",
-        action: str = "query",
-        prop: str = "revisions",
-        rvlimit: int = 10,
-        rvprop: str = "ids|timestamp|user|comment|size",
-    ) -> Dict[str, Any]:
+        limit: int = 10,
+    ) -> List[Dict[str, Any]]:
         """Fetch page revision history from Wikipedia.
 
         Args:
             title: Page title to fetch revisions for
-            format: Response format (default: json)
-            action: API action (default: query)
-            prop: Properties to fetch (default: revisions)
-            rvlimit: Number of revisions to fetch (default: 10)
-            rvprop: Revision properties to fetch
+            limit: Number of revisions to fetch (default: 10)
 
         Returns:
-            Dictionary containing page revisions and metadata
+            List of dictionaries containing revisions
         """
-        cache_key = self._get_cache_key("revisions", title=title, rvlimit=rvlimit)
+        cache_key = self._get_cache_key("revisions", title=title, limit=limit)
 
         params = {
-            "format": format,
-            "action": action,
+            "format": "json",
+            "action": "query",
             "titles": title,
-            "prop": prop,
-            "rvlimit": rvlimit,
-            "rvprop": rvprop,
+            "prop": "revisions",
+            "rvlimit": limit,
+            "rvprop": "ids|timestamp|user|comment|size",
         }
 
         response = self._make_request(self.base_url, params, cache_key)
 
-        result = {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "title": title,
-            "data": response,
-        }
-
-        return result  # type: ignore
+        pages = response.get("query", {}).get("pages", {})
+        page = next(iter(pages.values())) if pages else {}
+        revisions = page.get("revisions", [])
+        return revisions if isinstance(revisions, list) else []
 
     def get_backlinks(
         self,
         title: str,
-        format: str = "json",
-        action: str = "query",
-        list: str = "backlinks",
-        blnamespace: int = 0,
-        bllimit: int = 50,
-    ) -> Dict[str, Any]:
+        limit: int = 50,
+    ) -> List[Dict[str, Any]]:
         """Fetch pages that link to the given page.
 
         Args:
             title: Page title to find backlinks for
-            format: Response format (default: json)
-            action: API action (default: query)
-            list: List type (default: backlinks)
-            blnamespace: Namespace to search (default: 0 for main namespace)
-            bllimit: Number of backlinks to fetch (default: 50)
+            limit: Number of backlinks to fetch (default: 50)
 
         Returns:
-            Dictionary containing backlinks and metadata
+            List of dictionaries containing backlinks
         """
-        cache_key = self._get_cache_key("backlinks", title=title, bllimit=bllimit)
+        cache_key = self._get_cache_key("backlinks", title=title, limit=limit)
 
         params = {
-            "format": format,
-            "action": action,
-            "list": list,
+            "format": "json",
+            "action": "query",
+            "list": "backlinks",
             "bltitle": title,
-            "blnamespace": blnamespace,
-            "bllimit": bllimit,
+            "blnamespace": 0,
+            "bllimit": limit,
         }
 
         response = self._make_request(self.base_url, params, cache_key)
-
-        result = {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "title": title,
-            "data": response,
-        }
-
-        return result  # type: ignore
+        backlinks = response.get("query", {}).get("backlinks", [])
+        return backlinks if isinstance(backlinks, list) else []
 
     def get_pageviews(
         self,
@@ -434,7 +384,7 @@ class WikiClient:
 
         response = self._make_request(url, {}, cache_key)
 
-        result = {
+        return {
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "title": title,
             "start_date": start_date,
@@ -442,182 +392,138 @@ class WikiClient:
             "access": access,
             "agent": agent,
             "granularity": granularity,
-            "data": response,
+            "items": response.get("items", []),
         }
-
-        return result  # type: ignore
 
     def get_citations(
         self,
         title: str,
-        format: str = "json",
-        action: str = "query",
-        prop: str = "extlinks",
-        ellimit: int = 50,
-    ) -> Dict[str, Any]:
+        limit: int = 50,
+    ) -> List[Dict[str, Any]]:
         """Fetch external links (citations) from a Wikipedia page.
 
         Args:
             title: Page title to fetch citations for
-            format: Response format (default: json)
-            action: API action (default: query)
-            prop: Properties to fetch (default: extlinks)
-            ellimit: Number of external links to fetch (default: 50)
+            limit: Number of external links to fetch (default: 50)
 
         Returns:
-            Dictionary containing external links and metadata
+            List of dictionaries containing external links
         """
-        cache_key = self._get_cache_key("citations", title=title, ellimit=ellimit)
+        cache_key = self._get_cache_key("citations", title=title, limit=limit)
 
         params = {
-            "format": format,
-            "action": action,
+            "format": "json",
+            "action": "query",
             "titles": title,
-            "prop": prop,
-            "ellimit": ellimit,
+            "prop": "extlinks",
+            "ellimit": limit,
         }
 
         response = self._make_request(self.base_url, params, cache_key)
 
-        result = {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "title": title,
-            "data": response,
-        }
-
-        return result  # type: ignore
+        pages = response.get("query", {}).get("pages", {})
+        page = next(iter(pages.values())) if pages else {}
+        extlinks = page.get("extlinks", [])
+        return extlinks if isinstance(extlinks, list) else []
 
     def get_links(
         self,
         title: str,
-        format: str = "json",
-        action: str = "query",
-        prop: str = "links",
-        pllimit: int = 100,
-    ) -> Dict[str, Any]:
+        limit: int = 100,
+    ) -> List[Dict[str, Any]]:
         """Fetch internal links from a Wikipedia page.
 
         Args:
             title: Page title to fetch links for
-            format: Response format (default: json)
-            action: API action (default: query)
-            prop: Properties to fetch (default: links)
-            pllimit: Number of links to fetch (default: 100)
+            limit: Number of links to fetch (default: 100)
 
         Returns:
-            Dictionary containing internal links and metadata
+            List of dictionaries containing internal links
         """
-        cache_key = self._get_cache_key("links", title=title, pllimit=pllimit)
+        cache_key = self._get_cache_key("links", title=title, limit=limit)
 
         params = {
-            "format": format,
-            "action": action,
+            "format": "json",
+            "action": "query",
             "titles": title,
-            "prop": prop,
-            "pllimit": pllimit,
+            "prop": "links",
+            "pllimit": limit,
         }
 
         response = self._make_request(self.base_url, params, cache_key)
 
-        result = {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "title": title,
-            "data": response,
-        }
-
-        return result  # type: ignore
+        pages = response.get("query", {}).get("pages", {})
+        page = next(iter(pages.values())) if pages else {}
+        links = page.get("links", [])
+        return links if isinstance(links, list) else []
 
     def get_categories(
         self,
         title: str,
-        format: str = "json",
-        action: str = "query",
-        prop: str = "categories",
-        cllimit: int = 500,
-    ) -> Dict[str, Any]:
+        limit: int = 500,
+    ) -> List[Dict[str, Any]]:
         """Fetch categories for a Wikipedia page.
 
         Args:
             title: Page title to fetch categories for
-            format: Response format (default: json)
-            action: API action (default: query)
-            prop: Properties to fetch (default: categories)
-            cllimit: Number of categories to fetch (default: 500)
+            limit: Number of categories to fetch (default: 500)
 
         Returns:
-            Dictionary containing categories and metadata
+            List of dictionaries containing categories
         """
-        cache_key = self._get_cache_key("categories", title=title, cllimit=cllimit)
+        cache_key = self._get_cache_key("categories", title=title, limit=limit)
 
         params = {
-            "format": format,
-            "action": action,
+            "format": "json",
+            "action": "query",
             "titles": title,
-            "prop": prop,
-            "cllimit": cllimit,
+            "prop": "categories",
+            "cllimit": limit,
         }
 
         response = self._make_request(self.base_url, params, cache_key)
 
-        result = {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "title": title,
-            "data": response,
-        }
-
-        return result  # type: ignore
+        pages = response.get("query", {}).get("pages", {})
+        page = next(iter(pages.values())) if pages else {}
+        categories = page.get("categories", [])
+        return categories if isinstance(categories, list) else []
 
     def get_category_members(
         self,
-        category_name: str,
-        format: str = "json",
-        action: str = "query",
-        list: str = "categorymembers",
-        cmtype: str = "page",
-        cmlimit: int = 500,
-    ) -> Dict[str, Any]:
+        title: str,
+        limit: int = 500,
+    ) -> List[Dict[str, Any]]:
         """Fetch pages belonging to a Wikipedia category.
 
         Args:
-            category_name: Category title (with or without 'Category:' prefix)
-            format: Response format (default: json)
-            action: API action (default: query)
-            list: List type (default: categorymembers)
-            cmtype: Type of members to fetch (default: page)
-            cmlimit: Number of members to fetch (default: 500)
+            title: Category title (with or without 'Category:' prefix)
+            limit: Number of members to fetch (default: 500)
 
         Returns:
-            Dictionary containing category members and metadata
+            List of dictionaries containing category members
         """
         # Ensure category name has the prefix
-        if not category_name.startswith("Category:"):
-            category_name = f"Category:{category_name}"
+        if not title.startswith("Category:"):
+            title = f"Category:{title}"
 
         cache_key = self._get_cache_key(
             "category_members",
-            category_name=category_name,
-            cmtype=cmtype,
-            cmlimit=cmlimit,
+            title=title,
+            limit=limit,
         )
 
         params = {
-            "format": format,
-            "action": action,
-            "list": list,
-            "cmtitle": category_name,
-            "cmtype": cmtype,
-            "cmlimit": cmlimit,
+            "format": "json",
+            "action": "query",
+            "list": "categorymembers",
+            "cmtitle": title,
+            "cmtype": "page",
+            "cmlimit": limit,
         }
 
         response = self._make_request(self.base_url, params, cache_key)
-
-        result = {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "category": category_name,
-            "data": response,
-        }
-
-        return result  # type: ignore
+        members = response.get("query", {}).get("categorymembers", [])
+        return members if isinstance(members, list) else []
 
     def clear_cache(self) -> None:
         """Clear the response cache."""

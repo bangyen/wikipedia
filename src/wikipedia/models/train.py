@@ -162,10 +162,7 @@ class WikipediaMaturityClassifier:
 
         if positive_category:
             print(f"Fetching positive samples from {positive_category}...")
-            result = client.get_category_members(positive_category, cmlimit=500)
-            cat_members = (
-                result.get("data", {}).get("query", {}).get("categorymembers", [])
-            )
+            cat_members = client.get_category_members(positive_category, limit=500)
             high_quality_articles = [m["title"] for m in cat_members if "title" in m]
             print(f"  Found {len(high_quality_articles)} articles in positive category")
 
@@ -184,10 +181,7 @@ class WikipediaMaturityClassifier:
 
         if negative_category:
             print(f"Fetching negative samples from {negative_category}...")
-            result = client.get_category_members(negative_category, cmlimit=500)
-            cat_members = (
-                result.get("data", {}).get("query", {}).get("categorymembers", [])
-            )
+            cat_members = client.get_category_members(negative_category, limit=500)
             low_quality_articles = [m["title"] for m in cat_members if "title" in m]
             print(f"  Found {len(low_quality_articles)} articles in negative category")
 
@@ -215,34 +209,24 @@ class WikipediaMaturityClassifier:
                     page_content = client.get_page_content(title)
                     sections = client.get_sections(title)
                     templates = client.get_templates(title)
-                    revisions = client.get_revisions(title, rvlimit=20)
-                    backlinks = client.get_backlinks(title, bllimit=50)
-                    citations = client.get_citations(title, ellimit=50)
+                    revisions = client.get_revisions(title, limit=20)
+                    backlinks = client.get_backlinks(title, limit=50)
+                    citations = client.get_citations(title, limit=50)
 
                     # Combine data
                     article_data = {
                         "title": title,
                         "data": {
-                            "parse": page_content.get("data", {}).get("parse", {}),
+                            "parse": page_content,
                             "query": {
-                                "pages": page_content.get("data", {})
-                                .get("query", {})
-                                .get("pages", {}),
-                                "sections": sections.get("data", {})
-                                .get("parse", {})
-                                .get("sections", []),
-                                "templates": templates.get("data", {})
-                                .get("query", {})
-                                .get("pages", {}),
-                                "revisions": revisions.get("data", {})
-                                .get("query", {})
-                                .get("pages", {}),
-                                "backlinks": backlinks.get("data", {})
-                                .get("query", {})
-                                .get("backlinks", []),
-                                "extlinks": citations.get("data", {})
-                                .get("query", {})
-                                .get("pages", {}),
+                                "pages": {
+                                    page_content.get("pageid", "0"): page_content
+                                },
+                                "sections": sections,
+                                "templates": templates,
+                                "revisions": revisions,
+                                "backlinks": backlinks,
+                                "extlinks": citations,
                             },
                         },
                     }
@@ -280,34 +264,24 @@ class WikipediaMaturityClassifier:
                     page_content = client.get_page_content(title)
                     sections = client.get_sections(title)
                     templates = client.get_templates(title)
-                    revisions = client.get_revisions(title, rvlimit=20)
-                    backlinks = client.get_backlinks(title, bllimit=50)
-                    citations = client.get_citations(title, ellimit=50)
+                    revisions = client.get_revisions(title, limit=20)
+                    backlinks = client.get_backlinks(title, limit=50)
+                    citations = client.get_citations(title, limit=50)
 
                     # Combine data
                     article_data = {
                         "title": title,
                         "data": {
-                            "parse": page_content.get("data", {}).get("parse", {}),
+                            "parse": page_content,
                             "query": {
-                                "pages": page_content.get("data", {})
-                                .get("query", {})
-                                .get("pages", {}),
-                                "sections": sections.get("data", {})
-                                .get("parse", {})
-                                .get("sections", []),
-                                "templates": templates.get("data", {})
-                                .get("query", {})
-                                .get("pages", {}),
-                                "revisions": revisions.get("data", {})
-                                .get("query", {})
-                                .get("pages", {}),
-                                "backlinks": backlinks.get("data", {})
-                                .get("query", {})
-                                .get("backlinks", []),
-                                "extlinks": citations.get("data", {})
-                                .get("query", {})
-                                .get("pages", {}),
+                                "pages": {
+                                    page_content.get("pageid", "0"): page_content
+                                },
+                                "sections": sections,
+                                "templates": templates,
+                                "revisions": revisions,
+                                "backlinks": backlinks,
+                                "extlinks": citations,
                             },
                         },
                     }

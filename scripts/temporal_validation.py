@@ -52,28 +52,24 @@ class TemporalValidator:
             # Get revisions (default order is newest first)
             revisions = self.client.get_revisions(
                 title,
-                rvlimit=500,  # Get more revisions to find earliest
-                rvprop="timestamp|ids",
+                limit=500,  # Get more revisions to find earliest
             )
 
-            revisions_data = revisions.get("data", {}).get("query", {}).get("pages", {})
+            if revisions:
+                # Get the last (oldest) revision since API returns newest first
+                first_revision = revisions[-1]
+                timestamp_str = first_revision.get("timestamp", "")
 
-            for page_id, page_data in revisions_data.items():
-                if "revisions" in page_data and page_data["revisions"]:
-                    # Get the last (oldest) revision since API returns newest first
-                    first_revision = page_data["revisions"][-1]
-                    timestamp_str = first_revision.get("timestamp", "")
-
-                    if timestamp_str:
-                        # Parse timestamp
-                        if "T" in timestamp_str:
-                            return datetime.fromisoformat(
-                                timestamp_str.replace("Z", "+00:00")
-                            )
-                        else:
-                            return datetime.strptime(
-                                timestamp_str, "%Y-%m-%d %H:%M:%S"
-                            ).replace(tzinfo=timezone.utc)
+                if timestamp_str:
+                    # Parse timestamp
+                    if "T" in timestamp_str:
+                        return datetime.fromisoformat(
+                            timestamp_str.replace("Z", "+00:00")
+                        )
+                    else:
+                        return datetime.strptime(
+                            timestamp_str, "%Y-%m-%d %H:%M:%S"
+                        ).replace(tzinfo=timezone.utc)
 
             # Fallback: return current date if no revisions found
             return datetime.now(timezone.utc)
@@ -408,33 +404,21 @@ class TemporalValidator:
             page_content = self.client.get_page_content(title)
             sections = self.client.get_sections(title)
             templates = self.client.get_templates(title)
-            revisions = self.client.get_revisions(title, rvlimit=20)
-            backlinks = self.client.get_backlinks(title, bllimit=50)
-            citations = self.client.get_citations(title, ellimit=50)
+            revisions = self.client.get_revisions(title, limit=20)
+            backlinks = self.client.get_backlinks(title, limit=50)
+            citations = self.client.get_citations(title, limit=50)
 
             return {
                 "title": title,
                 "data": {
-                    "parse": page_content.get("data", {}).get("parse", {}),
+                    "parse": page_content,
                     "query": {
-                        "pages": page_content.get("data", {})
-                        .get("query", {})
-                        .get("pages", {}),
-                        "sections": sections.get("data", {})
-                        .get("parse", {})
-                        .get("sections", []),
-                        "templates": templates.get("data", {})
-                        .get("query", {})
-                        .get("pages", {}),
-                        "revisions": revisions.get("data", {})
-                        .get("query", {})
-                        .get("pages", {}),
-                        "backlinks": backlinks.get("data", {})
-                        .get("query", {})
-                        .get("backlinks", []),
-                        "extlinks": citations.get("data", {})
-                        .get("query", {})
-                        .get("pages", {}),
+                        "pages": {page_content.get("pageid", "0"): page_content},
+                        "sections": sections,
+                        "templates": templates,
+                        "revisions": revisions,
+                        "backlinks": backlinks,
+                        "extlinks": citations,
                     },
                 },
             }
