@@ -7,12 +7,16 @@ of articles within the Wikipedia link graph.
 """
 
 import math
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import networkx as nx
 
+from wikipedia.features.graph_processor import GraphProcessor
 
-def linkgraph_features(article_data: Dict[str, Any]) -> Dict[str, float]:
+
+def linkgraph_features(
+    article_data: Dict[str, Any], graph_processor: Optional[GraphProcessor] = None
+) -> Dict[str, float]:
     """Extract link graph features from Wikipedia article data.
 
     Analyzes the link graph structure around an article to compute centrality
@@ -43,15 +47,36 @@ def linkgraph_features(article_data: Dict[str, Any]) -> Dict[str, float]:
     backlinks = _extract_backlinks(article_data)
     internal_links = _extract_internal_links(article_data)
 
+    # If graph_processor is provided, check for pre-computed global metrics
+    if graph_processor:
+        global_metrics = graph_processor.get_article_metrics(
+            article_data.get("title", "")
+        )
+        if global_metrics:
+            features["pagerank_score"] = global_metrics["pagerank"]
+            features["authority_score"] = global_metrics["authority_score"]
+            features["hub_score"] = global_metrics["hub_score"]
+            features["degree_centrality"] = global_metrics["degree_centrality"]
+            features["has_global_metrics"] = 1.0
+        else:
+            features["has_global_metrics"] = 0.0
+    else:
+        features["has_global_metrics"] = 0.0
+
     # Build local graph around the article
     graph = _build_local_graph(article_data, backlinks, internal_links)
 
     if graph.number_of_nodes() == 0:
-        # Return zero values if no graph data
-        return _get_zero_linkgraph_features()
+        # Return base features if no graph data
+        base_features = _get_zero_linkgraph_features()
+        base_features.update(features)
+        return base_features
 
-    # Compute centrality measures
-    features.update(_compute_centrality_metrics(graph, article_data.get("title", "")))
+    # Compute centrality measures (if not already set by global metrics)
+    local_centrality = _compute_centrality_metrics(graph, article_data.get("title", ""))
+    for k, v in local_centrality.items():
+        if k not in features:
+            features[k] = v
 
     # Compute structural metrics
     features.update(_compute_structural_metrics(graph, article_data.get("title", "")))

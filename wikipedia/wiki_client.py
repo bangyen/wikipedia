@@ -5,9 +5,11 @@ MediaWiki API and Pageviews API, with built-in caching, rate limiting, and
 robust error handling to ensure reliable data ingestion.
 """
 
+import json
 import time
 from datetime import datetime, timezone
-from typing import Any, Dict, Optional
+from pathlib import Path
+from typing import Any, Dict, Optional, cast
 from urllib.parse import quote
 
 import requests  # type: ignore
@@ -37,6 +39,8 @@ class WikiClient:
         max_cache_size: int = 1000,
         rate_limit_delay: float = 0.1,
         max_retries: int = 3,
+        use_disk_cache: bool = True,
+        cache_dir: str = ".wiki_cache",
     ) -> None:
         """Initialize the WikiClient with configuration parameters.
 
@@ -47,11 +51,18 @@ class WikiClient:
             max_cache_size: Maximum number of cached responses
             rate_limit_delay: Delay between requests in seconds
             max_retries: Maximum number of retry attempts
+            use_disk_cache: Whether to use persistent disk cache
+            cache_dir: Directory for disk cache
         """
         self.base_url = base_url
         self.pageviews_url = pageviews_url
         self.rate_limit_delay = rate_limit_delay
         self.max_retries = max_retries
+        self.use_disk_cache = use_disk_cache
+        self.cache_dir = Path(cache_dir)
+
+        if self.use_disk_cache:
+            self.cache_dir.mkdir(parents=True, exist_ok=True)
 
         # Initialize cache with TTL
         self._cache: TTLCache[str, Dict[str, Any]] = TTLCache(
@@ -96,9 +107,16 @@ class WikiClient:
         Raises:
             requests.RequestException: If request fails after retries
         """
-        # Check cache first
+        # Check memory cache first
         if cache_key and cache_key in self._cache:
             return self._cache[cache_key]  # type: ignore
+
+        # Check disk cache
+        if self.use_disk_cache and cache_key:
+            disk_result = self._read_from_disk(cache_key)
+            if disk_result:
+                self._cache[cache_key] = disk_result
+                return disk_result
 
         @retry(
             stop=stop_after_attempt(self.max_retries),
@@ -116,8 +134,30 @@ class WikiClient:
         # Cache the result
         if cache_key:
             self._cache[cache_key] = result
+            if self.use_disk_cache:
+                self._write_to_disk(cache_key, result)
 
         return result  # type: ignore
+
+    def _read_from_disk(self, cache_key: str) -> Optional[Dict[str, Any]]:
+        """Read a response from disk cache."""
+        cache_file = self.cache_dir / f"{cache_key}.json"
+        if cache_file.exists():
+            try:
+                with open(cache_file, "r") as f:
+                    return cast(Optional[Dict[str, Any]], json.load(f))
+            except Exception:
+                return None
+        return None
+
+    def _write_to_disk(self, cache_key: str, data: Dict[str, Any]) -> None:
+        """Write a response to disk cache."""
+        cache_file = self.cache_dir / f"{cache_key}.json"
+        try:
+            with open(cache_file, "w") as f:
+                json.dump(data, f)
+        except Exception:
+            pass
 
     def _get_cache_key(self, method: str, **kwargs: Any) -> str:
         """Generate a cache key for the given method and parameters."""

@@ -7,7 +7,10 @@ and network connectivity metrics.
 
 import math
 from datetime import datetime, timezone, timedelta
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from wikipedia.features.graph_processor import GraphProcessor
 
 import numpy as np
 import re
@@ -715,7 +718,10 @@ def _extract_category_labels(article_data: Dict[str, Any]) -> List[str]:
     return [c.get("*", "").replace("_", " ") for c in categories if "*" in c]
 
 
-def all_features(article_data: Dict[str, Any]) -> Dict[str, float]:
+def all_features(
+    article_data: Dict[str, Any],
+    graph_processor: Optional["GraphProcessor"] = None,  # type: ignore
+) -> Dict[str, float]:
     """Extract all features from Wikipedia article data.
 
     Combines features from all pillars including structure, sourcing,
@@ -723,6 +729,7 @@ def all_features(article_data: Dict[str, Any]) -> Dict[str, float]:
 
     Args:
         article_data: Raw Wikipedia article JSON data
+        graph_processor: Optional pre-computed graph metrics
 
     Returns:
         Dictionary containing all extracted features
@@ -739,7 +746,9 @@ def all_features(article_data: Dict[str, Any]) -> Dict[str, float]:
     try:
         from wikipedia.features.linkgraph import linkgraph_features
 
-        features.update(linkgraph_features(article_data))
+        features.update(
+            linkgraph_features(article_data, graph_processor=graph_processor)
+        )
     except ImportError:
         # Fallback if linkgraph module is not available
         pass

@@ -2,6 +2,7 @@
 
 import json
 from datetime import datetime
+from pathlib import Path
 from unittest.mock import Mock, patch
 
 import requests  # type: ignore
@@ -19,6 +20,7 @@ class TestWikiClient:
             max_cache_size=100,
             rate_limit_delay=0.01,
             max_retries=2,
+            use_disk_cache=False,
         )
 
     def test_init(self) -> None:
@@ -419,3 +421,32 @@ class TestWikiClient:
 
                 # Timestamp should be valid ISO format
                 datetime.fromisoformat(result["timestamp"].replace("Z", "+00:00"))
+
+    def test_disk_caching(self, tmp_path: Path) -> None:
+        """Test persistent disk caching."""
+        cache_dir = tmp_path / "cache"
+        client = WikiClient(
+            use_disk_cache=True,
+            cache_dir=str(cache_dir),
+        )
+
+        with patch("wikipedia.wiki_client.requests.Session.get") as mock_get:
+            mock_response = Mock()
+            mock_response.json.return_value = {"test": "disk_data"}
+            mock_get.return_value = mock_response
+
+            # First call - should go to network
+            client.get_page_content("Disk Test")
+            assert mock_get.call_count == 1
+
+            # Verify file exists on disk
+            assert any(cache_dir.iterdir())
+
+            # Second call - should use memory cache
+            client.get_page_content("Disk Test")
+            assert mock_get.call_count == 1
+
+            # Clear memory cache, third call should use disk cache
+            client.clear_cache()
+            client.get_page_content("Disk Test")
+            assert mock_get.call_count == 1  # Still 1, as it used disk cache

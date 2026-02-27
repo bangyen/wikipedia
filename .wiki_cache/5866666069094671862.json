@@ -1,0 +1,1 @@
+{"query": {"pages": {"123": {"revisions": [{"revid": 123456, "timestamp": "2023-01-01T00:00:00Z", "user": "TestUser", "comment": "Test edit", "size": 5000}]}}}}

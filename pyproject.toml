@@ -40,6 +40,10 @@ dependencies = [
     "tqdm>=4.65.0",
     "pyyaml>=6.0",
     "colorama>=0.4.6",
+    "datasets>=4.5.0",
+    "pyarrow>=21.0.0",
+    "duckdb>=1.4.4",
+    "sqlite-utils>=3.38",
 ]
 
 [project.optional-dependencies]
