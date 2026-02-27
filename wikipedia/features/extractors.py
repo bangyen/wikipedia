@@ -225,11 +225,27 @@ def sourcing_features(article_data: Dict[str, Any]) -> Dict[str, float]:
         features["org_source_ratio"] = 0.0
 
     # Source quality indicators
+    # We assign higher weights to academic and gov sources
+    sourcing_quality_score = (
+        academic_count * 1.0 + gov_count * 0.8 + news_count * 0.5 + org_count * 0.3
+    )
+    if total_sources > 0:
+        features["sourcing_quality_score"] = min(
+            1.0, sourcing_quality_score / total_sources
+        )
+    else:
+        features["sourcing_quality_score"] = 0.0
+
     # Relaxed thresholds: absolute counts OR ratios
     features["has_reliable_sources"] = float(
         (features["academic_source_ratio"] > 0.05 or academic_count >= 3)
         or (features["gov_source_ratio"] > 0.05 or gov_count >= 3)
         or (features["news_source_ratio"] > 0.1 or news_count >= 5)
+    )
+    # Add a stricter high-quality source flag
+    features["has_high_quality_sources"] = float(
+        (features["academic_source_ratio"] > 0.15 or academic_count >= 5)
+        and (features["gov_source_ratio"] > 0.1 or gov_count >= 3)
     )
 
     # Log scaling

@@ -9,7 +9,10 @@ Performs 5-fold cross-validation and reports AUC, precision, recall metrics.
 import json
 import pickle
 from pathlib import Path
-from typing import Any, Dict, Tuple, Optional
+from typing import Any, Dict, Tuple, Optional, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from wikipedia.features.graph_processor import GraphProcessor
 
 import lightgbm as lgb
 import numpy as np
@@ -66,24 +69,32 @@ class WikipediaMaturityClassifier:
             "random_state": random_state,
         }
 
-    def extract_all_features(self, article_data: Dict[str, Any]) -> Dict[str, float]:
-        """Extract all features from article data.
+    def extract_all_features(
+        self,
+        article_data: Dict[str, Any],
+        graph_processor: Optional["GraphProcessor"] = None,
+    ) -> Dict[str, float]:
+        """Extract all features from article data, including global metrics if available.
 
         Args:
             article_data: Raw Wikipedia article JSON data.
+            graph_processor: Optional pre-computed graph metrics.
 
         Returns:
             Dictionary containing all extracted features.
         """
-        features = {}
+        try:
+            from wikipedia.features.extractors import all_features
 
-        # Extract features from each pillar
-        features.update(structure_features(article_data))
-        features.update(sourcing_features(article_data))
-        features.update(editorial_features(article_data))
-        features.update(network_features(article_data))
-
-        return features
+            return all_features(article_data, graph_processor=graph_processor)
+        except ImportError:
+            # Fallback to local extractors
+            features = {}
+            features.update(structure_features(article_data))
+            features.update(sourcing_features(article_data))
+            features.update(editorial_features(article_data))
+            features.update(network_features(article_data))
+            return features
 
     def create_training_dataset(
         self,

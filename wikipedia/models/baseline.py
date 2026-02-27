@@ -11,7 +11,10 @@ enabling adaptive normalization that reflects actual feature distributions.
 
 import math
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from wikipedia.features.graph_processor import GraphProcessor
 
 import numpy as np
 import yaml  # type: ignore
@@ -254,24 +257,32 @@ class HeuristicBaselineModel:
         self.normalization_ranges = calibrated_ranges
         return calibrated_ranges
 
-    def extract_features(self, article_data: Dict[str, Any]) -> Dict[str, float]:
-        """Extract all features from article data.
+    def extract_features(
+        self,
+        article_data: Dict[str, Any],
+        graph_processor: Optional["GraphProcessor"] = None,
+    ) -> Dict[str, float]:
+        """Extract all features from article data, including global metrics if available.
 
         Args:
             article_data: Raw Wikipedia article JSON data.
+            graph_processor: Optional pre-computed graph metrics.
 
         Returns:
             Dictionary containing all extracted features.
         """
-        features = {}
+        try:
+            from wikipedia.features.extractors import all_features
 
-        # Extract features from each pillar
-        features.update(structure_features(article_data))
-        features.update(sourcing_features(article_data))
-        features.update(editorial_features(article_data))
-        features.update(network_features(article_data))
-
-        return features
+            return all_features(article_data, graph_processor=graph_processor)
+        except ImportError:
+            # Fallback to local extractors if all_features is not available or fails
+            features = {}
+            features.update(structure_features(article_data))
+            features.update(sourcing_features(article_data))
+            features.update(editorial_features(article_data))
+            features.update(network_features(article_data))
+            return features
 
     def normalize_features(self, features: Dict[str, float]) -> Dict[str, float]:
         """Normalize features to 0-1 scale using percentile-based ranges.
@@ -367,6 +378,8 @@ class HeuristicBaselineModel:
             "citation_density",
             "has_reliable_sources",
             "academic_source_ratio",
+            "wikidata_referenced_ratio",
+            "wikidata_statement_quality",
         ]
         sourcing_score = self._calculate_weighted_score(
             normalized_features, sourcing_features_list, "sourcing"
@@ -394,6 +407,10 @@ class HeuristicBaselineModel:
             "connectivity_score",
             "link_density",
             "authority_score",
+            "pagerank_score",
+            "hub_score",
+            "wikidata_connectivity",
+            "wikidata_factual_richness",
         ]
         network_score = self._calculate_weighted_score(
             normalized_features, network_features_list, "network"
@@ -429,17 +446,24 @@ class HeuristicBaselineModel:
         else:
             return 0.0
 
-    def calculate_maturity_score(self, article_data: Dict[str, Any]) -> Dict[str, Any]:
+    def calculate_maturity_score(
+        self,
+        article_data: Dict[str, Any],
+        graph_processor: Optional["GraphProcessor"] = None,
+    ) -> Dict[str, Any]:
         """Calculate overall maturity score for an article.
 
         Args:
             article_data: Raw Wikipedia article JSON data.
+            graph_processor: Optional pre-computed graph metrics.
 
         Returns:
             Dictionary containing maturity score and breakdown.
         """
         # Extract and normalize features
-        raw_features = self.extract_features(article_data)
+        raw_features = self.extract_features(
+            article_data, graph_processor=graph_processor
+        )
         normalized_features = self.normalize_features(raw_features)
 
         # Calculate pillar scores
@@ -453,6 +477,10 @@ class HeuristicBaselineModel:
 
         for pillar, score in pillar_scores.items():
             weight = self.pillar_weights.get(pillar, 0.25)
+            # Special boost if global graph metrics are present
+            if pillar == "network" and raw_features.get("has_global_metrics", 0.0) > 0:
+                weight *= 1.5
+
             maturity_score += score * weight
             total_weight += weight
 
@@ -484,6 +512,7 @@ class HeuristicBaselineModel:
                 "pillars": self.pillar_weights,
                 "features": self.feature_weights,
             },
+            "global_metrics_used": bool(raw_features.get("has_global_metrics", 0.0)),
         }
 
     def _calculate_continuous_stub_penalty(
@@ -688,17 +717,24 @@ class HeuristicBaselineModel:
         with open(output_path, "w") as f:
             yaml.dump(weights_to_save, f, default_flow_style=False, indent=2)
 
-    def get_feature_importance(self, article_data: Dict[str, Any]) -> Dict[str, float]:
-        """Calculate feature importance for an article.
+    def get_feature_importance(
+        self,
+        article_data: Dict[str, Any],
+        graph_processor: Optional["GraphProcessor"] = None,
+    ) -> Dict[str, float]:
+        """Calculate importance of each feature for a specific article.
 
         Args:
             article_data: Raw Wikipedia article JSON data.
+            graph_processor: Optional pre-computed graph metrics.
 
         Returns:
-            Dictionary containing feature importance scores.
+            Dictionary mapping feature names to importance scores (0-1).
         """
-        # Extract features
-        raw_features = self.extract_features(article_data)
+        # Extract and normalize features
+        raw_features = self.extract_features(
+            article_data, graph_processor=graph_processor
+        )
         normalized_features = self.normalize_features(raw_features)
 
         # Calculate importance based on weights and feature values

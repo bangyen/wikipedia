@@ -5,9 +5,11 @@ This script validates the heuristic baseline model by testing its correlation
 with ORES articlequality scores and providing comprehensive evaluation metrics.
 """
 
+import argparse
 import json
 import math
-from typing import Any, Dict, List, Tuple, Union
+from pathlib import Path
+from typing import Any, Dict, List, Tuple, Union, Optional, TYPE_CHECKING
 
 import numpy as np
 import requests  # type: ignore
@@ -16,18 +18,27 @@ from tqdm import tqdm
 from wikipedia.models.baseline import HeuristicBaselineModel
 from wikipedia.wiki_client import WikiClient
 
+if TYPE_CHECKING:
+    from wikipedia.features.graph_processor import GraphProcessor
+
 
 class ModelValidator:
     """Validates heuristic baseline model against ORES articlequality scores."""
 
-    def __init__(self, model: HeuristicBaselineModel) -> None:
+    def __init__(
+        self,
+        model: HeuristicBaselineModel,
+        graph_processor: Optional["GraphProcessor"] = None,
+    ) -> None:
         """Initialize the validator.
 
         Args:
             model: Heuristic baseline model to validate.
+            graph_processor: Optional pre-computed graph metrics.
         """
         self.model = model
         self.client = WikiClient()
+        self.graph_processor = graph_processor
 
     def fetch_ores_scores(self, titles: List[str]) -> Dict[str, str]:
         """Fetch ORES articlequality scores for given titles.
@@ -43,30 +54,37 @@ class ModelValidator:
         # ORES API endpoint for articlequality
         url = "https://ores.wikimedia.org/v3/scores/enwiki/articlequality"
 
-        # Process titles in batches
+        # Process titles (revision IDs) in batches
         batch_size = 50
-        for i in tqdm(range(0, len(titles), batch_size), desc="Fetching ORES scores"):
-            batch_titles = titles[i : i + batch_size]
+        for i in range(0, len(titles), batch_size):
+            batch = titles[i : i + batch_size]
+
+            # ORES v3 GET endpoint
+            params = {"models": "articlequality", "revids": "|".join(batch)}
+            url = "https://ores.wikimedia.org/v3/scores/enwiki/"
 
             try:
-                response = requests.post(
+                response = requests.get(
                     url,
-                    json={"revids": [f"{title}" for title in batch_titles]},
+                    params=params,
+                    headers=self.client._session.headers,
                     timeout=30,
                 )
                 response.raise_for_status()
-
                 data = response.json()
 
-                # Extract scores from response
-                for title in batch_titles:
-                    if title in data.get("enwiki", {}).get("articlequality", {}):
-                        score = data["enwiki"]["articlequality"][title]["score"][
-                            "prediction"
-                        ]
-                        ores_scores[title] = score
+                # Extract scores
+                scores_data = data.get("enwiki", {}).get("scores", {})
+                for revid_str, model_data in scores_data.items():
+                    prediction = (
+                        model_data.get("articlequality", {})
+                        .get("score", {})
+                        .get("prediction")
+                    )
+                    if prediction:
+                        ores_scores[revid_str] = prediction
                     else:
-                        ores_scores[title] = "Unknown"
+                        ores_scores[revid_str] = "Unknown"
 
             except Exception as e:
                 print(f"Error fetching ORES scores for batch: {e}")
@@ -90,6 +108,38 @@ class ModelValidator:
             "Unknown": 50.0,  # Unknown quality
         }
 
+    def _get_revision_ids(self, titles: List[str]) -> Dict[str, int]:
+        """Fetch latest revision IDs for given titles."""
+        rev_ids = {}
+        batch_size = 50
+        for i in range(0, len(titles), batch_size):
+            batch = titles[i : i + batch_size]
+            params = {
+                "action": "query",
+                "format": "json",
+                "titles": "|".join(batch),
+                "prop": "revisions",
+                "rvprop": "ids",
+            }
+            try:
+                response = requests.get(
+                    "https://en.wikipedia.org/w/api.php",
+                    params=params,
+                    headers=self.client._session.headers,
+                    timeout=30,
+                )
+                response.raise_for_status()
+                data = response.json()
+                pages = data.get("query", {}).get("pages", {})
+                for page_id, page_data in pages.items():
+                    title = page_data.get("title")
+                    revisions = page_data.get("revisions", [])
+                    if title and revisions:
+                        rev_ids[title] = revisions[0].get("revid")
+            except Exception as e:
+                print(f"Error fetching revision IDs: {e}")
+        return rev_ids
+
     def fetch_validation_data(
         self, num_articles: int = 100
     ) -> List[Tuple[Dict[str, Any], float]]:
@@ -106,18 +156,30 @@ class ModelValidator:
         # Get random articles
         articles = self._get_random_articles(num_articles)
 
+        # Get revision IDs
+        rev_ids_map = self._get_revision_ids(articles)
+        rev_ids = list(rev_ids_map.values())
+
+        # Mapping from revid back to title
+        revid_to_title = {v: k for k, v in rev_ids_map.items()}
+
         # Fetch ORES scores
-        ores_scores = self.fetch_ores_scores(articles)
+        ores_results = self.fetch_ores_scores([str(rid) for rid in rev_ids])
 
         # Fetch comprehensive article data
         validation_data = []
         quality_mapping = self.get_quality_score_mapping()
 
-        for title in tqdm(articles, desc="Processing articles"):
+        for revid_str, ores_label in ores_results.items():
             try:
-                # Get ORES score
-                ores_label = ores_scores.get(title, "Unknown")
+                revid = int(revid_str)
+                title = revid_to_title.get(revid)
+                if not title:
+                    continue
+
                 ores_score = quality_mapping.get(ores_label, 50.0)
+                if ores_label == "Unknown":
+                    continue  # Skip unknowns for better correlation analysis
 
                 # Fetch article data
                 article_data = self._fetch_comprehensive_data(title)
@@ -125,7 +187,7 @@ class ModelValidator:
                     validation_data.append((article_data, ores_score))
 
             except Exception as e:
-                print(f"Error processing {title}: {e}")
+                print(f"Error processing revision {revid_str}: {e}")
                 continue
 
         print(f"Successfully processed {len(validation_data)} validation examples")
@@ -151,7 +213,9 @@ class ModelValidator:
         }
 
         try:
-            response = requests.get(url, params=params, timeout=30)
+            response = requests.get(
+                url, params=params, headers=self.client._session.headers, timeout=30
+            )
             response.raise_for_status()
             data = response.json()
 
@@ -241,7 +305,9 @@ class ModelValidator:
 
         for article_data, target_score in tqdm(validation_data, desc="Validating"):
             try:
-                result = self.model.calculate_maturity_score(article_data)
+                result = self.model.calculate_maturity_score(
+                    article_data, graph_processor=self.graph_processor
+                )
                 predicted_scores.append(result["maturity_score"])
                 target_scores.append(target_score)
 
@@ -317,10 +383,14 @@ class ModelValidator:
         ):
             try:
                 # Get feature importance for this article
-                importance = self.model.get_feature_importance(article_data)
+                importance = self.model.get_feature_importance(
+                    article_data, graph_processor=self.graph_processor
+                )
 
                 # Extract raw features
-                raw_features = self.model.extract_features(article_data)
+                raw_features = self.model.extract_features(
+                    article_data, graph_processor=self.graph_processor
+                )
 
                 # Calculate correlations
                 for feature_name, value in raw_features.items():
@@ -368,19 +438,55 @@ class ModelValidator:
 
 def main() -> bool:
     """Main validation script."""
-    print("Starting validation of heuristic baseline model...")
+    parser = argparse.ArgumentParser(description="Validate heuristic baseline model.")
+    parser.add_argument(
+        "--num-articles",
+        type=int,
+        default=50,
+        help="Number of articles for validation (default: 50)",
+    )
+    parser.add_argument(
+        "--output",
+        type=str,
+        default="wikipedia/models/validation_results.json",
+        help="Path to save results",
+    )
+    args = parser.parse_args()
+
+    print(
+        f"Starting validation of heuristic baseline model with {args.num_articles} articles..."
+    )
+
+    # Initialize graph processor if dumps exist
+    from wikipedia.features.graph_processor import GraphProcessor
+
+    graph_processor = None
+    try:
+        # Check if graph exists
+        graph_processor = GraphProcessor()
+        if not graph_processor.has_data:
+            print(
+                "Warning: Graph processor initialized but no graph data found. Global metrics will be skipped."
+            )
+            graph_processor = None
+        else:
+            print("Successfully initialized global graph processor.")
+    except Exception as e:
+        print(
+            f"Graph processor could not be initialized: {e}. Skipping global metrics."
+        )
 
     # Initialize model
     model = HeuristicBaselineModel()
 
     # Initialize validator
-    validator = ModelValidator(model)
+    validator = ModelValidator(model, graph_processor=graph_processor)
 
     # Fetch validation data
-    validation_data = validator.fetch_validation_data(num_articles=100)
+    validation_data = validator.fetch_validation_data(num_articles=args.num_articles)
 
-    if len(validation_data) < 20:
-        print("Warning: Insufficient validation data")
+    if len(validation_data) < 2:
+        print("Error: Insufficient validation data fetched.")
         return False
 
     # Validate model
@@ -411,32 +517,59 @@ def main() -> bool:
     ):
         print(f"  {i:2d}. {feature}: {importance:.3f}")
 
-    print("\nTop 10 Most Correlated Features:")
-    for i, (feature, corr) in enumerate(
-        list(importance_results["feature_correlations"].items())[:10], 1
-    ):
-        print(f"  {i:2d}. {feature}: {corr:.3f}")
+    # Ensure directory exists
+    output_path = Path(args.output)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # Print a few sample scores for debugging
+    print("\nSample Scores (Predicted vs Target):")
+    for i in range(min(5, len(validation_results.get("predicted_scores", [])))):
+        p = validation_results["predicted_scores"][i]
+        t = validation_results["target_scores"][i]
+        print(f"  Sample {i+1}: Pred={p:.2f}, Target={t:.2f}")
+
+    # Helper to make results JSON serializable
+    def make_serializable(obj: Any) -> Any:
+        if isinstance(obj, dict):
+            return {k: make_serializable(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [make_serializable(x) for x in obj]
+        elif isinstance(obj, (np.float32, np.float64)):
+            return float(obj)
+        elif isinstance(obj, (np.int32, np.int64)):
+            return int(obj)
+        elif isinstance(obj, (np.bool_)):
+            return bool(obj)
+        elif isinstance(obj, float) and math.isnan(obj):
+            return None
+        return obj
 
     # Save results
-    results = {
-        "validation": validation_results,
-        "feature_analysis": importance_results,
-        "model_info": {
-            "weights_file": model.weights_file,
-            "pillar_weights": model.pillar_weights,
-            "feature_weights": model.feature_weights,
-        },
-    }
+    results = make_serializable(
+        {
+            "validation": validation_results,
+            "feature_analysis": importance_results,
+            "model_info": {
+                "weights_file": model.weights_file,
+                "pillar_weights": model.pillar_weights,
+                "feature_weights": model.feature_weights,
+            },
+        }
+    )
 
-    with open("models/validation_results.json", "w") as f:
+    with open(output_path, "w") as f:
         json.dump(results, f, indent=2)
 
-    print("\nResults saved to models/validation_results.json")
+    print(f"\nResults saved to {output_path}")
 
     # Return success/failure
     return bool(validation_results.get("target_met", False))
 
 
 if __name__ == "__main__":
-    success = main()
-    exit(0 if success else 1)
+    try:
+        success = main()
+        exit(0 if success else 1)
+    except Exception as e:
+        print(f"Fatal error: {e}")
+        exit(1)

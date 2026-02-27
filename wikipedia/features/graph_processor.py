@@ -25,6 +25,19 @@ class GraphProcessor:
         self.con = duckdb.connect(db_path)
         self._init_db()
 
+    @property
+    def has_data(self) -> bool:
+        """Check if the database contains any link data.
+
+        Returns:
+            True if links table has content, False otherwise.
+        """
+        try:
+            res = self.con.execute("SELECT count(*) FROM links").fetchone()
+            return res[0] > 0 if res else False
+        except Exception:
+            return False
+
     def _init_db(self) -> None:
         """Initialize the database schema."""
         self.con.execute(
