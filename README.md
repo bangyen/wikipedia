@@ -9,15 +9,26 @@
 
 ## Quickstart
 
-Clone the repo and run the demo:
+Clone the repo and run with [uv](https://github.com/astral-sh/uv) (recommended):
 
 ```bash
 git clone https://github.com/bangyen/wikipedia.git
 cd wikipedia
-source venv/bin/activate
-pip install -e .
-pytest                 # optional: run tests
-python src/wikipedia/api/api.py   # start the API
+uv sync --all-extras     # install all dependencies (API, ML, Dev)
+uv run pytest            # optional: run tests
+uv run wiki-api          # start the API (or: just dashboard)
+```
+
+Or using standard pip:
+
+```bash
+git clone https://github.com/bangyen/wikipedia.git
+cd wikipedia
+python -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev,api,ml]"
+pytest
+wiki-api                 # start the API
 ```
 
 Or use the CLI: `wiki-score "Albert Einstein"`
@@ -26,7 +37,7 @@ Or use the CLI: `wiki-score "Albert Einstein"`
 
 | Validation Type      | Coverage       | Result         |
 |----------------------|----------------|----------------|
-| Unit Tests           | 69 tests       | **Passing**    |
+| Unit Tests           | 85 tests       | **Passing**    |
 | Temporal Validation  | 2006-2024      | Unbiased       |
 | Type Checking        | Full codebase  | mypy strict    |
 
@@ -45,7 +56,7 @@ wikipedia/
 ├── tests/                    # Unit and integration tests
 ├── src/
 │   └── wikipedia/
-│       ├── api/              # FastAPI server + CLI
+│       ├── api/              # FastAPI server (api.py) + CLI (wiki_score.py)
 │       ├── features/         # Feature extraction
 │       ├── models/           # Baseline model + weights
 │       └── wiki_client.py    # Wikipedia API client
