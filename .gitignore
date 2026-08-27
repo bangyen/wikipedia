@@ -80,6 +80,9 @@ output/
 # Audit data
 audit_data/
 src/wikipedia/models/*.json
+
+# Trained model binaries (regenerate via models/train.py)
+*.pkl
 .wiki_cache/
 .test_wiki_cache/
 *.parquet

@@ -17,9 +17,13 @@ init:
         pre-commit install
     fi
 
-# format code
+# format code (rewrites files)
 fmt:
     {{PYTHON}} -m black .
+
+# verify formatting without rewriting (used by CI)
+fmt-check:
+    {{PYTHON}} -m black --check .
 
 # lint code
 lint:
@@ -33,9 +37,13 @@ type:
 test:
     {{PYTHON}} -m pytest
 
-# run all checks (fmt, lint, type, test)
+# run all checks, formatting the code first (local development)
 all: fmt lint type test
     echo "All checks completed!"
+
+# run all checks without modifying files (CI): fails on formatting violations
+ci: fmt-check lint type test
+    echo "All CI checks passed!"
 
 # start FastAPI server (dashboard)
 dashboard:
@@ -44,6 +52,15 @@ dashboard:
 # run regression audit
 audit:
     {{PYTHON}} scripts/audit_scores.py
+
+# remove cached Wikipedia API responses (52MB+ after heavy use)
+clean-cache:
+    rm -rf .wiki_cache .test_wiki_cache
+
+# remove caches and build artifacts
+clean: clean-cache
+    rm -rf .mypy_cache .pytest_cache .ruff_cache build dist
+    find . -name "__pycache__" -type d -prune -exec rm -rf {} +
 
 
 

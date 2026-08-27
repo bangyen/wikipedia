@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Tuple, Union
 
 import numpy as np
-import requests  # type: ignore
+import requests
 from tqdm import tqdm
 
 from wikipedia.models.baseline import HeuristicBaselineModel

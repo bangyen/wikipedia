@@ -4,6 +4,7 @@ This module tests the WikidataClient functionality including API calls,
 caching, error handling, and feature extraction from Wikidata data.
 """
 
+from typing import Any, Dict
 import pytest
 from unittest.mock import Mock, patch
 
@@ -261,7 +262,7 @@ class TestWikidataFeatures:
 
     def test_wikidata_features_no_title(self) -> None:
         """Test Wikidata feature extraction with no title."""
-        article_data: dict = {"data": {}}
+        article_data: Dict[str, Any] = {"data": {}}
 
         features = wikidata_features(article_data)
 

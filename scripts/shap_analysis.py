@@ -47,8 +47,8 @@ class SHAPAnalyzer:
         self.feature_names: List[str] = []
         self.explainer: Any = None
         self.shap_values: Any = None
-        self.X_train: pd.DataFrame = None  # type: ignore
-        self.X_test: pd.DataFrame = None  # type: ignore
+        self.X_train: pd.DataFrame = None
+        self.X_test: pd.DataFrame = None
         self.y_train: np.ndarray = None  # type: ignore
         self.y_test: np.ndarray = None  # type: ignore
 
@@ -83,7 +83,7 @@ class SHAPAnalyzer:
         # Split data
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
             X, y, test_size=0.2, random_state=self.random_state, stratify=y
-        )  # type: ignore
+        )
 
         print(f"Training set: {self.X_train.shape[0]} samples")
         print(f"Test set: {self.X_test.shape[0]} samples")
@@ -485,11 +485,13 @@ def main() -> bool:
     """Main function to run SHAP analysis."""
     try:
         # Path to trained model
-        model_path = project_root / "models" / "gbm.pkl"
+        model_path = project_root / "src" / "wikipedia" / "models" / "gbm.pkl"
 
         if not model_path.exists():
             print(f"Model file not found: {model_path}")
-            print("Please train the model first using models/train.py")
+            print(
+                "Please train the model first: uv run python -m wikipedia.models.train"
+            )
             return False
 
         # Initialize analyzer

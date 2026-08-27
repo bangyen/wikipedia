@@ -141,7 +141,7 @@ def sample_articles(count: int = 100) -> List[str]:
     return random.sample(unique_titles, min(count, len(unique_titles)))
 
 
-def validate_wikidata_features() -> dict:
+def validate_wikidata_features() -> Dict[str, Any]:
     """Validate Wikidata completeness features for sampled articles.
 
     Returns:
@@ -254,7 +254,7 @@ def validate_wikidata_features() -> dict:
     return results
 
 
-def print_validation_report(results: dict) -> None:
+def print_validation_report(results: Dict[str, Any]) -> None:
     """Print a formatted validation report.
 
     Args:

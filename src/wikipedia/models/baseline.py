@@ -9,13 +9,16 @@ Features are normalized using percentile-based ranges derived from training data
 enabling adaptive normalization that reflects actual feature distributions.
 """
 
+import logging
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple, TYPE_CHECKING
+from typing import Any, cast, Dict, Optional, Tuple, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from wikipedia.features.graph_processor import GraphProcessor
 
-import yaml  # type: ignore
+import yaml
+
+logger = logging.getLogger(__name__)
 
 
 class HeuristicBaselineModel:
@@ -45,14 +48,33 @@ class HeuristicBaselineModel:
         weights_path = Path(self.weights_file)
 
         if not weights_path.exists():
+            logger.warning(
+                "Weights file %s not found; falling back to built-in defaults. "
+                "Scores will not reflect any calibration.",
+                weights_path,
+            )
             return self._get_default_weights()
 
         try:
             with open(weights_path, "r") as f:
                 weights = yaml.safe_load(f)
-            return weights or self._get_default_weights()
-        except Exception:
+        except (OSError, yaml.YAMLError):
+            logger.warning(
+                "Could not read weights file %s; falling back to built-in defaults. "
+                "Scores will not reflect any calibration.",
+                weights_path,
+                exc_info=True,
+            )
             return self._get_default_weights()
+
+        if not weights:
+            logger.warning(
+                "Weights file %s is empty; falling back to built-in defaults.",
+                weights_path,
+            )
+            return self._get_default_weights()
+
+        return cast(Dict[str, Any], weights)
 
     def _get_default_weights(self) -> Dict[str, Any]:
         """Get default weights for the heuristic model."""
@@ -202,7 +224,10 @@ class HeuristicBaselineModel:
                     w = self.feature_weights.get(f, 0.1)
                     weighted_sum += norm_features[f] * w
                     total_weight += abs(w)
-            scores[pillar] = (weighted_sum / total_weight) if total_weight > 0 else 0.0
+            raw_score = (weighted_sum / total_weight) if total_weight > 0 else 0.0
+            # Penalty features (e.g. bot_edit_ratio) carry negative weights, so the
+            # weighted sum can fall below zero. Clamp to keep scores in [0, 1].
+            scores[pillar] = max(0.0, min(1.0, raw_score))
         return scores
 
     def calculate_maturity_score(self, article_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -222,6 +247,7 @@ class HeuristicBaselineModel:
             total_w += w
 
         final_score = (score / total_w) if total_w > 0 else 0.0
+        final_score = max(0.0, min(1.0, final_score))
 
         # Simple stub penalty
         content_len = raw.get("content_length", 0)

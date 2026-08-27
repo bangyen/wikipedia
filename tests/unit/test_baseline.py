@@ -79,8 +79,9 @@ class TestHeuristicBaselineModel:
 
     def test_model_initialization_with_custom_weights(self) -> None:
         """Test model initialization with custom weights file."""
-        with patch("builtins.open", Mock()), patch(
-            "yaml.safe_load", Mock(return_value={"pillars": {"test": 0.5}})
+        with (
+            patch("builtins.open", Mock()),
+            patch("yaml.safe_load", Mock(return_value={"pillars": {"test": 0.5}})),
         ):
 
             model = HeuristicBaselineModel("custom_weights.yaml")
