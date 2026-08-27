@@ -16,6 +16,7 @@ if TYPE_CHECKING:
 
 import lightgbm as lgb
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 from sklearn.metrics import (  # type: ignore
     accuracy_score,
@@ -102,7 +103,7 @@ class WikipediaMaturityClassifier:
         ga_fa_ratio: float = 0.3,
         positive_category: Optional[str] = None,
         negative_category: Optional[str] = None,
-    ) -> Tuple[pd.DataFrame, np.ndarray]:
+    ) -> Tuple[pd.DataFrame, npt.NDArray[np.int64]]:
         """Create training dataset with GA/FA vs others labels.
 
         This method creates a training dataset by:
@@ -465,7 +466,7 @@ class WikipediaMaturityClassifier:
         }
 
     def train(
-        self, X: pd.DataFrame, y: np.ndarray, validation_size: float = 0.2
+        self, X: pd.DataFrame, y: npt.NDArray[np.int64], validation_size: float = 0.2
     ) -> Dict[str, Any]:
         """Train the LightGBM classifier.
 
@@ -534,7 +535,7 @@ class WikipediaMaturityClassifier:
         return results
 
     def cross_validate(
-        self, X: pd.DataFrame, y: np.ndarray, n_folds: int = 5
+        self, X: pd.DataFrame, y: npt.NDArray[np.int64], n_folds: int = 5
     ) -> Dict[str, Any]:
         """Perform k-fold cross-validation.
 
@@ -692,7 +693,7 @@ class WikipediaMaturityClassifier:
 
         print(f"Model loaded from {filepath}")
 
-    def predict(self, X: pd.DataFrame) -> np.ndarray:
+    def predict(self, X: pd.DataFrame) -> npt.NDArray[np.float64]:
         """Make predictions on new data.
 
         Args:
