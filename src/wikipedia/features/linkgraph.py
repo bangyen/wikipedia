@@ -261,7 +261,7 @@ def _compute_structural_metrics(graph: nx.DiGraph, title: str) -> Dict[str, floa
         # Core-periphery score (simplified)
         try:
             # Use degree as a proxy for core-periphery position
-            degree_dict = dict(graph.degree())  # type: ignore
+            degree_dict = dict(graph.degree())
             degree_value = degree_dict.get(title, 0)
             degree = int(degree_value) if isinstance(degree_value, (int, float)) else 0
             max_degree = max(degree_dict.values()) if graph.number_of_nodes() > 0 else 1

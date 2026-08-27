@@ -466,7 +466,7 @@ class TemporalValidator:
             # Convert to binary label (1 = high quality, 0 = low quality)
             labels.append(1 if score > 0.5 else 0)
 
-        return np.array(labels, dtype=np.float64)  # type: ignore
+        return np.array(labels, dtype=np.float64)
 
     def _calculate_simple_maturity_score(self, row: pd.Series) -> float:
         """Calculate a simple maturity score from DataFrame features.

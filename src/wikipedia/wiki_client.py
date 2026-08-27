@@ -6,13 +6,14 @@ robust error handling to ensure reliable data ingestion.
 """
 
 import json
+import logging
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, cast
 from urllib.parse import quote
 
-import requests  # type: ignore
+import requests
 from cachetools import TTLCache  # type: ignore
 from tenacity import (
     retry,
@@ -20,6 +21,8 @@ from tenacity import (
     wait_exponential,
     retry_if_exception_type,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class WikiClient:
@@ -137,7 +140,7 @@ class WikiClient:
             if self.use_disk_cache:
                 self._write_to_disk(cache_key, result)
 
-        return result  # type: ignore
+        return result
 
     def _read_from_disk(self, cache_key: str) -> Optional[Dict[str, Any]]:
         """Read a response from disk cache."""
@@ -146,7 +149,9 @@ class WikiClient:
             try:
                 with open(cache_file, "r") as f:
                     return cast(Optional[Dict[str, Any]], json.load(f))
-            except Exception:
+            except (OSError, json.JSONDecodeError):
+                # Corrupt or unreadable cache entry: treat as a cache miss.
+                logger.debug("Ignoring unreadable cache file %s", cache_file)
                 return None
         return None
 
@@ -156,8 +161,9 @@ class WikiClient:
         try:
             with open(cache_file, "w") as f:
                 json.dump(data, f)
-        except Exception:
-            pass
+        except (OSError, TypeError):
+            # Caching is best-effort; a write failure must not break scoring.
+            logger.debug("Could not write cache file %s", cache_file, exc_info=True)
 
     def _get_cache_key(self, method: str, **kwargs: Any) -> str:
         """Generate a cache key for the given method and parameters."""

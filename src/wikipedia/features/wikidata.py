@@ -11,7 +11,7 @@ import time
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
-import requests  # type: ignore
+import requests
 from cachetools import TTLCache  # type: ignore
 from tenacity import (
     retry,
@@ -116,7 +116,7 @@ class WikidataClient:
         if cache_key:
             self._cache[cache_key] = result
 
-        return result  # type: ignore
+        return result
 
     def _get_cache_key(self, method: str, **kwargs: Any) -> str:
         """Generate a cache key for the given method and parameters."""

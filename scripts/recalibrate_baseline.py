@@ -12,7 +12,7 @@ from typing import Any, Dict, List
 
 import numpy as np
 import pandas as pd
-import yaml  # type: ignore
+import yaml
 
 # Add project root to path
 project_root = Path(__file__).parent.parent

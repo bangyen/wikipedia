@@ -561,7 +561,7 @@ def _extract_category_labels(article_data: Dict[str, Any]) -> List[str]:
 
 def all_features(
     article_data: Dict[str, Any],
-    graph_processor: Optional["GraphProcessor"] = None,  # type: ignore
+    graph_processor: Optional["GraphProcessor"] = None,
 ) -> Dict[str, float]:
     """Extract all features from Wikipedia article data.
 

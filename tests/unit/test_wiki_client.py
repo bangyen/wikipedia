@@ -5,7 +5,7 @@ from datetime import datetime
 from pathlib import Path
 from unittest.mock import Mock, patch
 
-import requests  # type: ignore
+import requests
 
 from wikipedia.wiki_client import WikiClient
 

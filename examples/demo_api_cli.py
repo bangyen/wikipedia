@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-import requests  # type: ignore
+import requests
 
 
 def test_cli(title: str) -> dict[str, Any]:

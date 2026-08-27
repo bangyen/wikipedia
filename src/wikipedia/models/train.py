@@ -9,7 +9,7 @@ Performs 5-fold cross-validation and reports AUC, precision, recall metrics.
 import json
 import pickle
 from pathlib import Path
-from typing import Any, Dict, Tuple, Optional, TYPE_CHECKING
+from typing import Any, Dict, List, Tuple, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from wikipedia.features.graph_processor import GraphProcessor
@@ -555,7 +555,7 @@ class WikipediaMaturityClassifier:
             n_splits=n_folds, shuffle=True, random_state=self.random_state
         )
 
-        cv_scores: Dict[str, list] = {
+        cv_scores: Dict[str, List[float]] = {
             "accuracy": [],
             "auc": [],
             "avg_precision": [],

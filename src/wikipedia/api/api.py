@@ -6,6 +6,7 @@ using the heuristic baseline model. Returns JSON with score, band, and
 top contributing features.
 """
 
+import logging
 from typing import Any, Dict, Optional
 
 from fastapi import FastAPI, HTTPException, Query
@@ -14,6 +15,8 @@ from pydantic import BaseModel
 
 from wikipedia.models.baseline import HeuristicBaselineModel
 from wikipedia.wiki_client import WikiClient
+
+logger = logging.getLogger(__name__)
 
 
 class ScoreResponse(BaseModel):
@@ -104,12 +107,8 @@ def fetch_article_data(title: str) -> Optional[Dict[str, Any]]:
 
         return article_data
 
-    except Exception as e:
-        print(f"Error fetching data for {title}: {e}")
-        return None
-
-    except Exception as e:
-        print(f"Error fetching data for {title}: {e}")
+    except Exception:
+        logger.exception("Error fetching data for %s", title)
         return None
 
 
@@ -209,12 +208,21 @@ async def internal_error_handler(request: Any, exc: Any) -> JSONResponse:
     )
 
 
-if __name__ == "__main__":
+def main() -> None:
+    """Console-script entry point: start the API server."""
     import uvicorn
 
-    print("Starting Wikipedia Maturity Scoring API...")
-    print("API Documentation: http://localhost:8002/docs")
-    print("Health Check: http://localhost:8002/health")
-    print("Score Endpoint: http://localhost:8002/score?title=<article_title>")
+    logging.basicConfig(level=logging.INFO)
+    logger.info("Starting Wikipedia Maturity Scoring API on http://localhost:8002")
+    logger.info("API documentation: http://localhost:8002/docs")
+    uvicorn.run(
+        "wikipedia.api.api:app",
+        host="127.0.0.1",
+        port=8002,
+        reload=False,
+        log_level="info",
+    )
 
-    uvicorn.run("api:app", host="0.0.0.0", port=8002, reload=True, log_level="info")
+
+if __name__ == "__main__":
+    main()
