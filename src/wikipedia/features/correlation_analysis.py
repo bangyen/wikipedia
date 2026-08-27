@@ -5,9 +5,10 @@ redundancies, multicollinearity, and feature importance. Helps optimize feature
 selection and identify candidates for removal or combination.
 """
 
-from typing import Any, Dict, List, Optional, Tuple, Set, cast
+from typing import Any, Dict, List, Optional, Tuple, Set
 
 import numpy as np
+import numpy.typing as npt
 
 
 class CorrelationAnalyzer:
@@ -24,9 +25,9 @@ class CorrelationAnalyzer:
         """
         self.threshold_high = threshold_high
         self.threshold_low = threshold_low
-        self.correlation_matrix: Optional[np.ndarray] = None
+        self.correlation_matrix: Optional[npt.NDArray[np.float64]] = None
         self.feature_names: List[str] = []
-        self.features_data: Optional[np.ndarray] = None
+        self.features_data: Optional[npt.NDArray[np.float64]] = None
 
     def fit(self, features_list: List[Dict[str, float]]) -> None:
         """Fit the analyzer on a collection of feature dictionaries.
@@ -69,7 +70,7 @@ class CorrelationAnalyzer:
         # Use nanmean/nanstd to handle missing values gracefully
         self.correlation_matrix = self._compute_correlation_matrix()
 
-    def _compute_correlation_matrix(self) -> np.ndarray:
+    def _compute_correlation_matrix(self) -> npt.NDArray[np.float64]:
         """Compute Pearson correlation matrix, handling NaN values.
 
         Returns:
@@ -98,7 +99,7 @@ class CorrelationAnalyzer:
                 else:
                     corr_matrix[i, j] = 0.0
 
-        return cast(np.ndarray, corr_matrix)
+        return corr_matrix
 
     def get_high_correlations(
         self, exclude_self: bool = True

@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 
 # Add project root to path
@@ -439,7 +440,7 @@ class TemporalValidator:
                 },
             }
 
-    def _generate_synthetic_labels(self, df: pd.DataFrame) -> np.ndarray:
+    def _generate_synthetic_labels(self, df: pd.DataFrame) -> npt.NDArray[np.float64]:
         """Generate synthetic quality labels based on article features."""
         labels = []
 
