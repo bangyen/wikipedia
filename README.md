@@ -39,7 +39,6 @@ Or use the CLI: `wiki-score "Albert Einstein"`
 |----------------------|----------------|----------------|
 | Unit Tests           | 91 tests       | **Passing**    |
 | Line Coverage        | `src/`         | 73%            |
-| Temporal Validation  | 2006-2024      | Unbiased       |
 | Type Checking        | Full codebase  | mypy strict    |
 
 ## Features
